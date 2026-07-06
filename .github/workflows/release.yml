@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin, x86_64-apple-darwin
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build Rust crates
+        run: cargo build --workspace --release
+
+      - name: Build universal binary
+        run: |
+          mkdir -p target/universal
+          lipo -create \
+            target/aarch64-apple-darwin/release/libpromptos_core.a \
+            target/x86_64-apple-darwin/release/libpromptos_core.a \
+            -output target/universal/libpromptos_core.a
+
+      - name: Build Swift app
+        run: |
+          cd swift
+          xcodebuild -scheme PromptOSApp -derivedDataPath build -configuration Release
+
+      - name: Package .app bundle
+        run: |
+          mkdir -p build/PromptOS.app/Contents/MacOS
+          mkdir -p build/PromptOS.app/Contents/Resources
+          mkdir -p build/PromptOS.app/Contents/Resources/profiles
+          cp -r swift/build/Build/Products/Release/PromptOSApp.app/Contents/MacOS/* build/PromptOS.app/Contents/MacOS/
+
+      - name: Create DMG
+        run: |
+          mkdir -p build/dmg
+          cp -r build/PromptOS.app build/dmg/
+          ln -s /Applications build/dmg/Applications
+          hdiutil create -volname "PromptOS" -srcfolder build/dmg -ov -format UDZO build/PromptOS.dmg
+          rm -rf build/dmg
+
+      - name: Sign bundle
+        run: |
+          codesign --deep --force --verify-verbose --options runtime --timestamp \
+            --entitlements promptos.entitlements \
+            -s "${{ secrets.DEVELOPER_ID_CERT }}" \
+            build/PromptOS.app
+
+      - name: Notarize
+        run: |
+          xcrun notarytool submit build/PromptOS.dmg \
+            --apple-id "${{ secrets.APPLE_ID }}" \
+            --password "${{ secrets.APPLE_PASSWORD }}" \
+            --team-id "${{ secrets.TEAM_ID }}" \
+            --wait
+          xcrun stapler staple build/PromptOS.dmg
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/PromptOS.dmg
+          generate_release_notes: true

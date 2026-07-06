@@ -1,0 +1,43 @@
+[profile]
+model_id = "claude-3.5-sonnet"
+provider = "anthropic"
+version = "1.2.0"
+last_updated = "2026-01-15"
+
+[specs]
+context_limit_input = 200000
+context_limit_output = 8192
+max_output_tokens = 8192
+pricing_input_per_mtok = 3.00
+pricing_output_per_mtok = 15.00
+pricing_cached_input_per_mtok = 0.30
+
+[performance]
+reasoning_quality = 0.92
+coding_quality = 0.89
+writing_quality = 0.90
+analysis_quality = 0.91
+structured_extraction_quality = 0.88
+tool_use_reliability = 0.85
+instruction_following = 0.93
+
+[format_reliability]
+xml = 0.95
+markdown = 0.90
+json_structured = 0.85
+json_unstructured = 0.75
+
+[behavior]
+chain_of_thought_effective = true
+self_correction_tendency = 0.3
+verbose_conciseness = 0.5
+long_context_retrieval_accuracy = 0.85
+primacy_effect_bias = 0.2
+recency_effect_bias = 0.3
+
+[safety]
+hallucination_risk_general = 0.08
+hallucination_risk_coding = 0.05
+hallucination_risk_factual = 0.12
+refusal_rate = 0.02
+sycophancy_tendency = 0.3

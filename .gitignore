@@ -1,0 +1,31 @@
+# Rust
+target/
+*/target/
+**/*.rs.bk
+
+# Swift
+swift/build/
+swift/PromptOSApp/build/
+*.xcworkspace
+*.xcuserdata
+
+# macOS
+.DS_Store
+*.dmg
+*.app
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build artifacts
+build/
+*.log
+
+# Large generated assets (PNG source for icon, icns is what's bundled)
+Gemini_Generated_Image_*.png
+
+# Dependencies (not workspace root)
+# Cargo.lock should be committed for workspace

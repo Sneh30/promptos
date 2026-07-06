@@ -1,0 +1,43 @@
+[profile]
+model_id = "gpt-4o"
+provider = "openai"
+version = "1.1.0"
+last_updated = "2026-01-10"
+
+[specs]
+context_limit_input = 128000
+context_limit_output = 16384
+max_output_tokens = 16384
+pricing_input_per_mtok = 5.00
+pricing_output_per_mtok = 15.00
+pricing_cached_input_per_mtok = 2.50
+
+[performance]
+reasoning_quality = 0.91
+coding_quality = 0.93
+writing_quality = 0.88
+analysis_quality = 0.90
+structured_extraction_quality = 0.90
+tool_use_reliability = 0.88
+instruction_following = 0.91
+
+[format_reliability]
+xml = 0.70
+markdown = 0.95
+json_structured = 0.92
+json_unstructured = 0.85
+
+[behavior]
+chain_of_thought_effective = true
+self_correction_tendency = 0.4
+verbose_conciseness = 0.4
+long_context_retrieval_accuracy = 0.80
+primacy_effect_bias = 0.3
+recency_effect_bias = 0.4
+
+[safety]
+hallucination_risk_general = 0.07
+hallucination_risk_coding = 0.04
+hallucination_risk_factual = 0.10
+refusal_rate = 0.03
+sycophancy_tendency = 0.25

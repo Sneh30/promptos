@@ -1,0 +1,23 @@
+[package]
+name = "promptos-eval"
+version = "0.1.0"
+edition = "2021"
+description = "Evaluation framework and benchmark harness for PromptOS"
+
+[lib]
+name = "promptos_eval"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+async-trait.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+toml.workspace = true
+promptos-core = { path = "../promptos-core" }
+promptos-provider = { path = "../promptos-provider" }
+promptos-profiles = { path = "../promptos-profiles" }

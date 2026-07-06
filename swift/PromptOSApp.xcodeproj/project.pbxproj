@@ -1,0 +1,64 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+		// Main group
+		0867D691284A3C1A002C8A9E = {
+			isa = PBXGroup;
+			children = (
+				0867D692284A3C1A002C8A9E, // PromptOSApp
+				0867D691284A3C1A002C8A9E, // Products
+			);
+			sourceTree = "<group>";
+		};
+		0867D692284A3C1A002C8A9E = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = "Sources/PromptOSApp";
+			sourceTree = SOURCE_ROOT;
+		};
+		0867D691284A3C1A002C8A9E = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		// Build configuration list
+		0867D695284A3C1A002C8A9E = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0867D696284A3C1A002C8A9E,
+				0867D697284A3C1A002C8A9E,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Release";
+		};
+		0867D696284A3C1A002C8A9E = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = "Debug";
+		};
+		0867D697284A3C1A002C8A9E = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = "Release";
+		};
+	};
+	rootObject = 0867D691284A3C1A002C8A9E;
+}

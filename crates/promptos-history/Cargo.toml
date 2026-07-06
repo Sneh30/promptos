@@ -1,0 +1,21 @@
+[package]
+name = "promptos-history"
+version = "0.1.0"
+edition = "2021"
+description = "Prompt compilation history storage for PromptOS"
+
+[lib]
+name = "promptos_history"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+rmp-serde.workspace = true
+zstd.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+uuid.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+chrono.workspace = true
+toml.workspace = true
