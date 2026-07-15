@@ -22,8 +22,10 @@ jobs:
         uses: Swatinem/rust-cache@v2
       - name: Check formatting
         run: cargo fmt --all --check
+        working-directory: PromptOs
       - name: Run clippy
         run: cargo clippy --workspace -- -D warnings
+        working-directory: PromptOs
 
   test:
     runs-on: macos-14
@@ -40,8 +42,10 @@ jobs:
         uses: Swatinem/rust-cache@v2
       - name: Build
         run: cargo build --workspace --target ${{ matrix.target }}
+        working-directory: PromptOs
       - name: Run tests
         run: cargo test --workspace --target ${{ matrix.target }}
+        working-directory: PromptOs
 
   swift-lint:
     runs-on: macos-14
@@ -51,7 +55,7 @@ jobs:
         run: brew install swiftlint
       - name: Run SwiftLint
         run: swiftlint lint --strict
-        working-directory: swift
+        working-directory: PromptOs/swift
 
   evaluation:
     runs-on: macos-14
@@ -64,3 +68,4 @@ jobs:
         uses: Swatinem/rust-cache@v2
       - name: Run evaluation benchmarks
         run: cargo test --package promptos-eval
+        working-directory: PromptOs
