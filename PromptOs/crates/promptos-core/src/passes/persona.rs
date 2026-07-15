@@ -19,7 +19,10 @@ impl OptimizationPass for PersonaReinforcementPass {
     }
 
     async fn run(&self, ast: &mut PromptRoot, ctx: &PassContext) -> Result<PassResult, PassError> {
-        info!("Pass [persona] — entering, target_model={}", ctx.target_model);
+        info!(
+            "Pass [persona] — entering, target_model={}",
+            ctx.target_model
+        );
         let mut persona_count = 0;
 
         for child in &ast.children {
@@ -27,7 +30,10 @@ impl OptimizationPass for PersonaReinforcementPass {
                 let reinforced = if ctx.target_model.contains("claude") {
                     format!("<role>\n{}\n</role>", role.role)
                 } else if ctx.target_model.contains("gpt") || ctx.target_model.contains("openai") {
-                    format!("System: You are {}.", role.role.trim_start_matches("You are").trim())
+                    format!(
+                        "System: You are {}.",
+                        role.role.trim_start_matches("You are").trim()
+                    )
                 } else {
                     role.role.clone()
                 };
@@ -43,8 +49,10 @@ impl OptimizationPass for PersonaReinforcementPass {
             pass_name: self.name().to_string(),
             tokens_saved: 0,
             applied: persona_count > 0,
-            description: format!("Reinforced {} persona specifications for model {}", 
-                persona_count, ctx.target_model),
+            description: format!(
+                "Reinforced {} persona specifications for model {}",
+                persona_count, ctx.target_model
+            ),
         })
     }
 
@@ -59,15 +67,13 @@ mod tests {
 
     #[tokio::test]
     async fn test_persona_reinforcement_no_persona() {
-        let mut ast = PromptRoot::new(vec![
-            PromptNode::Instruction(Instruction {
-                verb: InstructionVerb::Write,
-                object: "Write code".to_string(),
-                modifiers: Vec::new(),
-                confidence: 0.9,
-                span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 10)),
-            }),
-        ]);
+        let mut ast = PromptRoot::new(vec![PromptNode::Instruction(Instruction {
+            verb: InstructionVerb::Write,
+            object: "Write code".to_string(),
+            modifiers: Vec::new(),
+            confidence: 0.9,
+            span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 10)),
+        })]);
         let pass = PersonaReinforcementPass;
         let ctx = PassContext {
             model_profile: None,

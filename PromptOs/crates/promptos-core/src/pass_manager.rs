@@ -40,11 +40,7 @@ impl PassManager {
         &self.passes
     }
 
-    pub async fn run_all(
-        &mut self,
-        ast: &mut PromptRoot,
-        ctx: &PassContext,
-    ) -> Vec<PassResult> {
+    pub async fn run_all(&mut self, ast: &mut PromptRoot, ctx: &PassContext) -> Vec<PassResult> {
         let mut results = Vec::new();
         for pass in &self.passes {
             if pass.should_run(self.mode, &self.user_config) {
@@ -62,7 +58,10 @@ impl PassManager {
                                         pass_name: pass.name().to_string(),
                                         tokens_saved: 0,
                                         applied: false,
-                                        description: format!("{}: reverted - verification failed", pass.name()),
+                                        description: format!(
+                                            "{}: reverted - verification failed",
+                                            pass.name()
+                                        ),
                                     });
                                 }
                             }
@@ -112,7 +111,10 @@ impl PassManager {
                                         pass_name: pass.name().to_string(),
                                         tokens_saved: 0,
                                         applied: false,
-                                        description: format!("{}: reverted - verification failed", pass.name()),
+                                        description: format!(
+                                            "{}: reverted - verification failed",
+                                            pass.name()
+                                        ),
                                     });
                                 }
                             }

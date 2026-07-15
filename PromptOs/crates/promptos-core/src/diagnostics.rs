@@ -11,7 +11,13 @@ impl DiagnosticBuilder {
         }
     }
 
-    pub fn error(&mut self, code: &str, message: &str, span: Option<SourceSpan>, recommendation: Option<&str>) {
+    pub fn error(
+        &mut self,
+        code: &str,
+        message: &str,
+        span: Option<SourceSpan>,
+        recommendation: Option<&str>,
+    ) {
         self.diagnostics.push(Diagnostic {
             severity: DiagnosticSeverity::Error,
             message: message.to_string(),
@@ -21,7 +27,13 @@ impl DiagnosticBuilder {
         });
     }
 
-    pub fn warning(&mut self, code: &str, message: &str, span: Option<SourceSpan>, recommendation: Option<&str>) {
+    pub fn warning(
+        &mut self,
+        code: &str,
+        message: &str,
+        span: Option<SourceSpan>,
+        recommendation: Option<&str>,
+    ) {
         self.diagnostics.push(Diagnostic {
             severity: DiagnosticSeverity::Warning,
             message: message.to_string(),
@@ -31,7 +43,13 @@ impl DiagnosticBuilder {
         });
     }
 
-    pub fn suggestion(&mut self, code: &str, message: &str, span: Option<SourceSpan>, recommendation: Option<&str>) {
+    pub fn suggestion(
+        &mut self,
+        code: &str,
+        message: &str,
+        span: Option<SourceSpan>,
+        recommendation: Option<&str>,
+    ) {
         self.diagnostics.push(Diagnostic {
             severity: DiagnosticSeverity::Suggestion,
             message: message.to_string(),
@@ -41,7 +59,13 @@ impl DiagnosticBuilder {
         });
     }
 
-    pub fn info(&mut self, code: &str, message: &str, span: Option<SourceSpan>, recommendation: Option<&str>) {
+    pub fn info(
+        &mut self,
+        code: &str,
+        message: &str,
+        span: Option<SourceSpan>,
+        recommendation: Option<&str>,
+    ) {
         self.diagnostics.push(Diagnostic {
             severity: DiagnosticSeverity::Info,
             message: message.to_string(),
@@ -109,11 +133,21 @@ impl DiagnosticBuilder {
     pub fn summary_string(&self) -> String {
         let (errors, warnings, suggestions, infos) = self.count_by_severity();
         let mut parts = Vec::new();
-        if errors > 0 { parts.push(format!("{} errors", errors)); }
-        if warnings > 0 { parts.push(format!("{} warnings", warnings)); }
-        if suggestions > 0 { parts.push(format!("{} suggestions", suggestions)); }
-        if infos > 0 { parts.push(format!("{} info", infos)); }
-        if parts.is_empty() { return "No diagnostics".to_string(); }
+        if errors > 0 {
+            parts.push(format!("{} errors", errors));
+        }
+        if warnings > 0 {
+            parts.push(format!("{} warnings", warnings));
+        }
+        if suggestions > 0 {
+            parts.push(format!("{} suggestions", suggestions));
+        }
+        if infos > 0 {
+            parts.push(format!("{} info", infos));
+        }
+        if parts.is_empty() {
+            return "No diagnostics".to_string();
+        }
         parts.join(", ")
     }
 }

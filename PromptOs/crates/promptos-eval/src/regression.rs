@@ -1,4 +1,4 @@
-use crate::benchmark::{BenchmarkSuiteResult, CategorySummary, BenchmarkResult};
+use crate::benchmark::{BenchmarkResult, BenchmarkSuiteResult, CategorySummary};
 use log::{info, warn};
 
 #[derive(Debug, Clone)]
@@ -22,13 +22,21 @@ pub struct CategoryRegression {
 pub struct RegressionChecker;
 
 impl RegressionChecker {
-    pub fn compare(baseline: &BenchmarkSuiteResult, current: &BenchmarkSuiteResult) -> RegressionReport {
-        info!("Regression check — baseline={}, current={}", baseline.suite_name, current.suite_name);
+    pub fn compare(
+        baseline: &BenchmarkSuiteResult,
+        current: &BenchmarkSuiteResult,
+    ) -> RegressionReport {
+        info!(
+            "Regression check — baseline={}, current={}",
+            baseline.suite_name, current.suite_name
+        );
         let mut category_regressions = Vec::new();
         let mut total_regressions = 0usize;
 
         for base_cat in &baseline.category_summary {
-            let current_cat = current.category_summary.iter()
+            let current_cat = current
+                .category_summary
+                .iter()
                 .find(|c| c.category == base_cat.category);
 
             if let Some(cur_cat) = current_cat {
@@ -50,7 +58,10 @@ impl RegressionChecker {
         }
 
         if total_regressions > 0 {
-            warn!("Regression detected — {} categories regressed", total_regressions);
+            warn!(
+                "Regression detected — {} categories regressed",
+                total_regressions
+            );
         } else {
             info!("Regression check — passed, no regressions detected");
         }
@@ -81,26 +92,29 @@ mod tests {
             failed: 0,
             average_improvement_pct: 0.0,
             results: vec![],
-            category_summary: categories.into_iter().map(|(cat, avg)| CategorySummary {
-                category: cat.to_string(),
-                count: 1,
-                avg_improvement: avg,
-                pass_rate: 1.0,
-            }).collect(),
+            category_summary: categories
+                .into_iter()
+                .map(|(cat, avg)| CategorySummary {
+                    category: cat.to_string(),
+                    count: 1,
+                    avg_improvement: avg,
+                    pass_rate: 1.0,
+                })
+                .collect(),
         }
     }
 
     #[test]
     fn test_regression_detection() {
-        let baseline = make_suite_result("baseline", vec![
-            ("code", 15.0),
-            ("writing", 20.0),
-        ]);
+        let baseline = make_suite_result("baseline", vec![("code", 15.0), ("writing", 20.0)]);
 
-        let current = make_suite_result("current", vec![
-            ("code", 12.0),  // -3.0 delta exceeds 2% threshold
-            ("writing", 21.0),
-        ]);
+        let current = make_suite_result(
+            "current",
+            vec![
+                ("code", 12.0), // -3.0 delta exceeds 2% threshold
+                ("writing", 21.0),
+            ],
+        );
 
         let report = RegressionChecker::compare(&baseline, &current);
         assert!(report.overall_regression);
@@ -109,13 +123,9 @@ mod tests {
 
     #[test]
     fn test_no_regression() {
-        let baseline = make_suite_result("baseline", vec![
-            ("code", 15.0),
-        ]);
+        let baseline = make_suite_result("baseline", vec![("code", 15.0)]);
 
-        let current = make_suite_result("current", vec![
-            ("code", 16.0),
-        ]);
+        let current = make_suite_result("current", vec![("code", 16.0)]);
 
         let report = RegressionChecker::compare(&baseline, &current);
         assert!(!report.overall_regression);

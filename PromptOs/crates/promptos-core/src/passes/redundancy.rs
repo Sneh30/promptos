@@ -1,6 +1,6 @@
 use super::*;
 use async_trait::async_trait;
-use log::{info, debug};
+use log::{debug, info};
 use std::collections::HashSet;
 
 pub struct RedundancyEliminationPass;
@@ -27,12 +27,25 @@ impl OptimizationPass for RedundancyEliminationPass {
     }
 
     fn should_run(&self, mode: CompilationMode, _config: &UserConfig) -> bool {
-        matches!(mode, CompilationMode::Economy | CompilationMode::Balanced | CompilationMode::DeepAnalysis | CompilationMode::MissionCritical)
+        matches!(
+            mode,
+            CompilationMode::Economy
+                | CompilationMode::Balanced
+                | CompilationMode::DeepAnalysis
+                | CompilationMode::MissionCritical
+        )
     }
 
     async fn run(&self, ast: &mut PromptRoot, _ctx: &PassContext) -> Result<PassResult, PassError> {
-        let before_tokens = ast.children.iter().map(|c| format!("{:?}", c).split_whitespace().count()).sum::<usize>();
-        info!("Pass [redundancy] — entering, children={}", ast.children.len());
+        let before_tokens = ast
+            .children
+            .iter()
+            .map(|c| format!("{:?}", c).split_whitespace().count())
+            .sum::<usize>();
+        info!(
+            "Pass [redundancy] — entering, children={}",
+            ast.children.len()
+        );
         let mut tokens_saved: isize = 0;
         let mut removed = 0;
 
@@ -58,12 +71,20 @@ impl OptimizationPass for RedundancyEliminationPass {
             i += 1;
         }
 
-        info!("Pass [redundancy] — exit, removed={}, tokens_saved={}, children_after={}", removed, tokens_saved, ast.children.len());
+        info!(
+            "Pass [redundancy] — exit, removed={}, tokens_saved={}, children_after={}",
+            removed,
+            tokens_saved,
+            ast.children.len()
+        );
         Ok(PassResult {
             pass_name: self.name().to_string(),
             tokens_saved,
             applied: removed > 0,
-            description: format!("Removed {} redundant nodes, saved {} tokens", removed, tokens_saved),
+            description: format!(
+                "Removed {} redundant nodes, saved {} tokens",
+                removed, tokens_saved
+            ),
         })
     }
 
@@ -94,7 +115,9 @@ impl OptimizationPass for RedundancyEliminationPass {
 
         for instr in &original_instructions {
             if !compiled_instructions.contains(instr) {
-                let found = compiled_instructions.iter().any(|c| jaccard_similarity(c, instr) > 0.8);
+                let found = compiled_instructions
+                    .iter()
+                    .any(|c| jaccard_similarity(c, instr) > 0.8);
                 if !found {
                     return Err(VerificationFailure {
                         pass_name: self.name().to_string(),
@@ -125,15 +148,13 @@ mod tests {
 
     #[tokio::test]
     async fn test_redundancy_no_change() {
-        let ast = PromptRoot::new(vec![
-            PromptNode::Instruction(Instruction {
-                verb: InstructionVerb::Write,
-                object: "Write a poem".to_string(),
-                modifiers: Vec::new(),
-                confidence: 0.9,
-                span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 15)),
-            }),
-        ]);
+        let ast = PromptRoot::new(vec![PromptNode::Instruction(Instruction {
+            verb: InstructionVerb::Write,
+            object: "Write a poem".to_string(),
+            modifiers: Vec::new(),
+            confidence: 0.9,
+            span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 15)),
+        })]);
         let mut ast_clone = ast.clone();
         let pass = RedundancyEliminationPass;
         let ctx = PassContext {

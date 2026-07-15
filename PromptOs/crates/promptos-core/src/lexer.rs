@@ -122,7 +122,10 @@ impl Lexer {
         }
         text.push('\n');
         loop {
-            if self.peek() == Some('`') && self.peek_next() == Some('`') && self.input.get(self.position + 2) == Some(&'`') {
+            if self.peek() == Some('`')
+                && self.peek_next() == Some('`')
+                && self.input.get(self.position + 2) == Some(&'`')
+            {
                 for _ in 0..3 {
                     if let Some(ch) = self.advance() {
                         text.push(ch);
@@ -213,11 +216,15 @@ impl Lexer {
                 })
             }
             '#' => Some(self.read_heading()),
-            '`' if self.peek_next() == Some('`') && self.input.get(self.position + 2) == Some(&'`') => {
+            '`' if self.peek_next() == Some('`')
+                && self.input.get(self.position + 2) == Some(&'`') =>
+            {
                 Some(self.read_code_block())
             }
             '>' => Some(self.read_blockquote()),
-            '-' if self.peek_next() == Some('-') && self.input.get(self.position + 2) == Some(&'-') => {
+            '-' if self.peek_next() == Some('-')
+                && self.input.get(self.position + 2) == Some(&'-') =>
+            {
                 Some(self.read_separator())
             }
             '-' | '*' | '+' => {

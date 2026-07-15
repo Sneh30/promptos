@@ -29,7 +29,10 @@ impl OptimizationPass for FormatNormalizationPass {
     }
 
     async fn run(&self, ast: &mut PromptRoot, ctx: &PassContext) -> Result<PassResult, PassError> {
-        info!("Pass [format_normalizer] — entering, target_model={}", ctx.target_model);
+        info!(
+            "Pass [format_normalizer] — entering, target_model={}",
+            ctx.target_model
+        );
         let mut normalized = 0;
         let preferred_format = self.get_preferred_format(&ctx.target_model);
 
@@ -46,13 +49,18 @@ impl OptimizationPass for FormatNormalizationPass {
             }
         }
 
-        info!("Pass [format_normalizer] — exit, normalized={}, preferred={}", normalized, preferred_format);
+        info!(
+            "Pass [format_normalizer] — exit, normalized={}, preferred={}",
+            normalized, preferred_format
+        );
         Ok(PassResult {
             pass_name: self.name().to_string(),
             tokens_saved: 0,
             applied: normalized > 0,
-            description: format!("Normalized {} format specifications to {} preferred format", 
-                normalized, ctx.target_model),
+            description: format!(
+                "Normalized {} format specifications to {} preferred format",
+                normalized, ctx.target_model
+            ),
         })
     }
 
@@ -81,13 +89,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_format_normalization_claude() {
-        let mut ast = PromptRoot::new(vec![
-            PromptNode::FormatSpec(FormatSpec {
-                format_type: "json".to_string(),
-                detail: "Output as JSON".to_string(),
-                span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 15)),
-            }),
-        ]);
+        let mut ast = PromptRoot::new(vec![PromptNode::FormatSpec(FormatSpec {
+            format_type: "json".to_string(),
+            detail: "Output as JSON".to_string(),
+            span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 15)),
+        })]);
         let pass = FormatNormalizationPass;
         let ctx = PassContext {
             model_profile: None,

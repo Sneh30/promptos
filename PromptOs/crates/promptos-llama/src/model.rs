@@ -37,7 +37,8 @@ impl ModelManager {
         if !p.exists() {
             return Err(format!("Model file not found: {}", path));
         }
-        let metadata = std::fs::metadata(p).map_err(|e| format!("Cannot read model metadata: {}", e))?;
+        let metadata =
+            std::fs::metadata(p).map_err(|e| format!("Cannot read model metadata: {}", e))?;
         let size_bytes = metadata.len();
         let sha = self.verify_integrity(path)?;
 
@@ -112,7 +113,9 @@ impl ModelManager {
         let mut hasher = Sha256::new();
         let mut buf = [0u8; 8192];
         loop {
-            let n = file.read(&mut buf).map_err(|e| format!("Error reading model: {}", e))?;
+            let n = file
+                .read(&mut buf)
+                .map_err(|e| format!("Error reading model: {}", e))?;
             if n == 0 {
                 break;
             }

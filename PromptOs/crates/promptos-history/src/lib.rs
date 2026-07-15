@@ -1,4 +1,4 @@
-use log::{info, warn, debug};
+use log::{debug, info, warn};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -65,7 +65,10 @@ impl HistoryManager {
     pub fn new(config: HistoryConfig) -> Self {
         let storage_dir = if config.storage_dir.is_empty() {
             let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
-            format!("{}/Library/Application Support/com.promptos.app/history", home)
+            format!(
+                "{}/Library/Application Support/com.promptos.app/history",
+                home
+            )
         } else {
             config.storage_dir.clone()
         };
@@ -84,7 +87,12 @@ impl HistoryManager {
 
     pub fn save(&self, entry: HistoryEntry) -> Result<(), String> {
         let path = format!("{}/entries/{}.msgpack", self.config.storage_dir, entry.id);
-        info!("History save — id={}, prompt_len={}, target_model={}", entry.id, entry.user_prompt.len(), entry.target_model);
+        info!(
+            "History save — id={}, prompt_len={}, target_model={}",
+            entry.id,
+            entry.user_prompt.len(),
+            entry.target_model
+        );
         let data = rmp_serde::to_vec(&entry).map_err(|e| format!("Serialization error: {}", e))?;
 
         let data = if self.config.compress {
@@ -126,8 +134,8 @@ impl HistoryManager {
             data
         };
 
-        let entry: HistoryEntry = rmp_serde::from_slice(&data)
-            .map_err(|e| format!("Deserialization error: {}", e))?;
+        let entry: HistoryEntry =
+            rmp_serde::from_slice(&data).map_err(|e| format!("Deserialization error: {}", e))?;
 
         Ok(Some(entry))
     }
@@ -135,7 +143,13 @@ impl HistoryManager {
     pub fn list(&self, limit: usize, offset: usize) -> Result<Vec<HistoryEntry>, String> {
         let ids: Vec<Uuid> = {
             let index = self.index.lock().map_err(|e| e.to_string())?;
-            index.values().rev().skip(offset).take(limit).copied().collect()
+            index
+                .values()
+                .rev()
+                .skip(offset)
+                .take(limit)
+                .copied()
+                .collect()
         };
 
         let mut results = Vec::new();
@@ -184,7 +198,9 @@ impl HistoryManager {
                 e.user_prompt.to_lowercase().contains(&query_lower)
                     || e.compiled_prompt.to_lowercase().contains(&query_lower)
                     || e.target_model.to_lowercase().contains(&query_lower)
-                    || e.tags.iter().any(|t| t.to_lowercase().contains(&query_lower))
+                    || e.tags
+                        .iter()
+                        .any(|t| t.to_lowercase().contains(&query_lower))
             })
             .collect())
     }
@@ -204,7 +220,8 @@ impl HistoryManager {
     fn load_index(&self) -> Result<(), String> {
         let index_path = format!("{}/index.msgpack", self.config.storage_dir);
         if Path::new(&index_path).exists() {
-            let data = std::fs::read(&index_path).map_err(|e| format!("Index read error: {}", e))?;
+            let data =
+                std::fs::read(&index_path).map_err(|e| format!("Index read error: {}", e))?;
             let index: BTreeMap<u64, Uuid> = rmp_serde::from_slice(&data)
                 .map_err(|e| format!("Index deserialization error: {}", e))?;
             *self.index.lock().map_err(|e| e.to_string())? = index;

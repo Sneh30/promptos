@@ -22,11 +22,19 @@ impl OptimizationPass for CotScaffoldingPass {
     }
 
     fn should_run(&self, mode: CompilationMode, _config: &UserConfig) -> bool {
-        matches!(mode, CompilationMode::DeepAnalysis | CompilationMode::MissionCritical | CompilationMode::Balanced)
+        matches!(
+            mode,
+            CompilationMode::DeepAnalysis
+                | CompilationMode::MissionCritical
+                | CompilationMode::Balanced
+        )
     }
 
     async fn run(&self, ast: &mut PromptRoot, ctx: &PassContext) -> Result<PassResult, PassError> {
-        info!("Pass [cot_scaffolding] — entering, target_model={}", ctx.target_model);
+        info!(
+            "Pass [cot_scaffolding] — entering, target_model={}",
+            ctx.target_model
+        );
         let needs_cot = ast.annotations.intent.as_ref().map_or(false, |i| {
             matches!(i.complexity, Complexity::Complex | Complexity::VeryComplex)
         });
@@ -34,16 +42,14 @@ impl OptimizationPass for CotScaffoldingPass {
         let model_supports_cot = self.model_supports_cot(&ctx.target_model);
 
         if needs_cot && model_supports_cot {
-            let new_children = vec![
-                PromptNode::MetaInstruction(MetaInstruction {
-                    content: COT_PHRASES[0].to_string(),
-                    meta_type: "reasoning-scaffold".to_string(),
-                        span: crate::ast::SourceSpan::new(
-                            Position::new(1, 1),
-                            Position::new(1, COT_PHRASES[0].len() + 1),
-                        ),
-                }),
-            ];
+            let new_children = vec![PromptNode::MetaInstruction(MetaInstruction {
+                content: COT_PHRASES[0].to_string(),
+                meta_type: "reasoning-scaffold".to_string(),
+                span: crate::ast::SourceSpan::new(
+                    Position::new(1, 1),
+                    Position::new(1, COT_PHRASES[0].len() + 1),
+                ),
+            })];
             let mut all = new_children;
             all.append(&mut ast.children);
             ast.children = all;
@@ -53,10 +59,16 @@ impl OptimizationPass for CotScaffoldingPass {
                 pass_name: self.name().to_string(),
                 tokens_saved: -(COT_PHRASES[0].split_whitespace().count() as isize),
                 applied: true,
-                description: format!("Injected CoT scaffolding (model: {}, complexity requires reasoning)", ctx.target_model),
+                description: format!(
+                    "Injected CoT scaffolding (model: {}, complexity requires reasoning)",
+                    ctx.target_model
+                ),
             })
         } else {
-            info!("Pass [cot_scaffolding] — exit, applied=false, needs_cot={}", needs_cot);
+            info!(
+                "Pass [cot_scaffolding] — exit, applied=false, needs_cot={}",
+                needs_cot
+            );
             Ok(PassResult {
                 pass_name: self.name().to_string(),
                 tokens_saved: 0,
@@ -64,7 +76,10 @@ impl OptimizationPass for CotScaffoldingPass {
                 description: if !needs_cot {
                     "CoT not needed: task complexity is low".to_string()
                 } else {
-                    format!("CoT skipped: model {} may not benefit from CoT scaffolding", ctx.target_model)
+                    format!(
+                        "CoT skipped: model {} may not benefit from CoT scaffolding",
+                        ctx.target_model
+                    )
                 },
             })
         }
@@ -76,7 +91,6 @@ impl OptimizationPass for CotScaffoldingPass {
 }
 
 impl CotScaffoldingPass {
-
     fn model_supports_cot(&self, model_id: &str) -> bool {
         model_id.contains("claude") || model_id.contains("gpt") || model_id.contains("gemini")
     }
@@ -99,26 +113,26 @@ mod tests {
         let ctx = PassContext {
             model_profile: None,
             annotations: ast.annotations.clone(),
-             config: UserConfig::default(),
-             target_model: "claude-3.5-sonnet".to_string(),
-         };
-         let result = pass.run(&mut ast, &ctx).await.unwrap();
-         assert!(!result.applied);
-     }
+            config: UserConfig::default(),
+            target_model: "claude-3.5-sonnet".to_string(),
+        };
+        let result = pass.run(&mut ast, &ctx).await.unwrap();
+        assert!(!result.applied);
+    }
 
-     #[tokio::test]
-     async fn test_cot_applied_for_complex() {
-         let mut ast = PromptRoot::new(vec![]);
-         ast.annotations.intent = Some(Intent {
-             primary_task: "Design a distributed system".to_string(),
-             domain: None,
-             output_type: OutputType::Text,
-             complexity: Complexity::Complex,
-         });
-         let pass = CotScaffoldingPass;
-         let ctx = PassContext {
-             model_profile: None,
-             annotations: ast.annotations.clone(),
+    #[tokio::test]
+    async fn test_cot_applied_for_complex() {
+        let mut ast = PromptRoot::new(vec![]);
+        ast.annotations.intent = Some(Intent {
+            primary_task: "Design a distributed system".to_string(),
+            domain: None,
+            output_type: OutputType::Text,
+            complexity: Complexity::Complex,
+        });
+        let pass = CotScaffoldingPass;
+        let ctx = PassContext {
+            model_profile: None,
+            annotations: ast.annotations.clone(),
             config: UserConfig::default(),
             target_model: "claude-3.5-sonnet".to_string(),
         };

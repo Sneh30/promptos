@@ -17,8 +17,13 @@ const WEAK_PATTERNS: &[(&str, &str)] = &[
 ];
 
 const STRONG_PREFIXES: &[&str] = &[
-    "You must", "Required:", "Critical:", "Important:",
-    "Strictly", "Exactly", "Precisely",
+    "You must",
+    "Required:",
+    "Critical:",
+    "Important:",
+    "Strictly",
+    "Exactly",
+    "Precisely",
 ];
 
 #[async_trait]
@@ -32,11 +37,19 @@ impl OptimizationPass for InstructionStrengtheningPass {
     }
 
     fn should_run(&self, mode: CompilationMode, _config: &UserConfig) -> bool {
-        matches!(mode, CompilationMode::Balanced | CompilationMode::DeepAnalysis | CompilationMode::MissionCritical)
+        matches!(
+            mode,
+            CompilationMode::Balanced
+                | CompilationMode::DeepAnalysis
+                | CompilationMode::MissionCritical
+        )
     }
 
     async fn run(&self, ast: &mut PromptRoot, _ctx: &PassContext) -> Result<PassResult, PassError> {
-        info!("Pass [instruction_strength] — entering, children={}", ast.children.len());
+        info!(
+            "Pass [instruction_strength] — entering, children={}",
+            ast.children.len()
+        );
         let mut strengthened = 0;
         let mut tokens_saved = 0isize;
 
@@ -47,10 +60,8 @@ impl OptimizationPass for InstructionStrengtheningPass {
                     let lower = instr.object.to_lowercase();
                     if lower.contains(weak) {
                         if replacement.is_empty() {
-                            instr.object = instr.object.replace(
-                                &instr.object[..weak.len() + 1],
-                                "",
-                            );
+                            instr.object =
+                                instr.object.replace(&instr.object[..weak.len() + 1], "");
                         }
                         instr.object = instr.object.trim().to_string();
                         if !instr.object.starts_with("Write")
@@ -58,7 +69,8 @@ impl OptimizationPass for InstructionStrengtheningPass {
                             && !instr.object.starts_with("Explain")
                         {
                             // Strengthen by adding imperative prefix
-                            instr.object = format!("{} {}", self.get_imperative(&instr.verb), instr.object);
+                            instr.object =
+                                format!("{} {}", self.get_imperative(&instr.verb), instr.object);
                         }
                         strengthened += 1;
                         let new_len = instr.object.len();
@@ -69,7 +81,10 @@ impl OptimizationPass for InstructionStrengtheningPass {
             }
         }
 
-        info!("Pass [instruction_strength] — exit, strengthened={}, tokens_saved={}", strengthened, tokens_saved);
+        info!(
+            "Pass [instruction_strength] — exit, strengthened={}, tokens_saved={}",
+            strengthened, tokens_saved
+        );
         Ok(PassResult {
             pass_name: self.name().to_string(),
             tokens_saved,
@@ -143,15 +158,13 @@ mod tests {
 
     #[tokio::test]
     async fn test_strengthen_weak_instruction() {
-        let mut ast = PromptRoot::new(vec![
-            PromptNode::Instruction(Instruction {
-                verb: InstructionVerb::Write,
-                object: "Could you write a poem?".to_string(),
-                modifiers: Vec::new(),
-                confidence: 0.7,
-                span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 25)),
-            }),
-        ]);
+        let mut ast = PromptRoot::new(vec![PromptNode::Instruction(Instruction {
+            verb: InstructionVerb::Write,
+            object: "Could you write a poem?".to_string(),
+            modifiers: Vec::new(),
+            confidence: 0.7,
+            span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 25)),
+        })]);
         let pass = InstructionStrengtheningPass;
         let ctx = PassContext {
             model_profile: None,
@@ -165,15 +178,13 @@ mod tests {
 
     #[tokio::test]
     async fn test_strong_instruction_unchanged() {
-        let mut ast = PromptRoot::new(vec![
-            PromptNode::Instruction(Instruction {
-                verb: InstructionVerb::Write,
-                object: "Write a poem about nature".to_string(),
-                modifiers: Vec::new(),
-                confidence: 0.9,
-                span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 25)),
-            }),
-        ]);
+        let mut ast = PromptRoot::new(vec![PromptNode::Instruction(Instruction {
+            verb: InstructionVerb::Write,
+            object: "Write a poem about nature".to_string(),
+            modifiers: Vec::new(),
+            confidence: 0.9,
+            span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 25)),
+        })]);
         let pass = InstructionStrengtheningPass;
         let ctx = PassContext {
             model_profile: None,

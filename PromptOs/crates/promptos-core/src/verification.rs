@@ -45,7 +45,9 @@ impl SemanticPreservationChecker {
             })
             .collect();
 
-        let missing: Vec<&&str> = original_instructions.difference(&compiled_instructions).collect();
+        let missing: Vec<&&str> = original_instructions
+            .difference(&compiled_instructions)
+            .collect();
         if missing.is_empty() {
             results.push(VerificationResult {
                 check_name: "semantic-preservation".to_string(),
@@ -56,7 +58,10 @@ impl SemanticPreservationChecker {
             results.push(VerificationResult {
                 check_name: "semantic-preservation".to_string(),
                 status: VerificationStatus::Warning,
-                message: format!("{} instructions may have been modified or removed", missing.len()),
+                message: format!(
+                    "{} instructions may have been modified or removed",
+                    missing.len()
+                ),
             });
         }
 
@@ -103,7 +108,10 @@ impl ContradictionChecker {
             results.push(VerificationResult {
                 check_name: "contradiction-check".to_string(),
                 status: VerificationStatus::Fail,
-                message: format!("{} contradictions detected in compiled output", contradictions_found),
+                message: format!(
+                    "{} contradictions detected in compiled output",
+                    contradictions_found
+                ),
             });
         }
 

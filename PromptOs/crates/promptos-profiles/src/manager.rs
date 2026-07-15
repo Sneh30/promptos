@@ -41,7 +41,9 @@ impl ProfileManager {
         let mut count = 0;
         let mut map = self.profiles.lock().map_err(|e| e.to_string())?;
 
-        for entry in std::fs::read_dir(dir_path).map_err(|e| format!("Cannot read profiles dir: {}", e))? {
+        for entry in
+            std::fs::read_dir(dir_path).map_err(|e| format!("Cannot read profiles dir: {}", e))?
+        {
             let entry = entry.map_err(|e| format!("Cannot read entry: {}", e))?;
             let path = entry.path();
             if path.extension().map_or(false, |e| e == "toml") {
