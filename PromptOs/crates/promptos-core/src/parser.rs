@@ -269,21 +269,22 @@ impl Parser {
         }
 
         if (lower.contains("example") || lower.contains("for instance") || lower.contains("e.g."))
-            && (text.contains("->") || text.contains("=>")) {
-                let parts: Vec<&str> = if text.contains("->") {
-                    text.splitn(2, "->").collect()
-                } else {
-                    text.splitn(2, "=>").collect()
-                };
-                if parts.len() == 2 {
-                    return PromptNode::Example(Example {
-                        input: parts[0].trim().to_string(),
-                        output: parts[1].trim().to_string(),
-                        label: None,
-                        span: SourceSpan::new(span_start, end),
-                    });
-                }
+            && (text.contains("->") || text.contains("=>"))
+        {
+            let parts: Vec<&str> = if text.contains("->") {
+                text.splitn(2, "->").collect()
+            } else {
+                text.splitn(2, "=>").collect()
+            };
+            if parts.len() == 2 {
+                return PromptNode::Example(Example {
+                    input: parts[0].trim().to_string(),
+                    output: parts[1].trim().to_string(),
+                    label: None,
+                    span: SourceSpan::new(span_start, end),
+                });
             }
+        }
 
         PromptNode::Context(Context {
             content: text.to_string(),

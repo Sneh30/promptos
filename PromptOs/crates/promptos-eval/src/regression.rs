@@ -94,7 +94,7 @@ mod tests {
             results: vec![],
             category_summary: categories
                 .into_iter()
-                .map(|(cat, avg)| CategorySummary {
+                .map(|(cat, avg)| crate::benchmark::CategorySummary {
                     category: cat.to_string(),
                     count: 1,
                     avg_improvement: avg,

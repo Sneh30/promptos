@@ -14,8 +14,7 @@ pub struct PluginMeta {
     pub description: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[derive(Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct PluginPermissions {
     #[serde(default)]
     pub network: bool,
@@ -24,7 +23,6 @@ pub struct PluginPermissions {
     #[serde(default)]
     pub api_keys: Vec<String>,
 }
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PluginInfo {

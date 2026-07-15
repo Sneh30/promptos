@@ -92,19 +92,18 @@ impl RuleBasedAnalyzer {
                         });
                     }
                 }
-                PromptNode::Context(ctx)
-                    if ctx.content.len() < 10 && !ctx.content.is_empty() => {
-                        ambiguities.push(Ambiguity {
-                            text: ctx.content.clone(),
-                            span: ctx.span,
-                            interpretations: vec![
-                                "Context too short to be meaningful".to_string(),
-                                "May be a fragment".to_string(),
-                            ],
-                            recommended_resolution: Some("Provide more context".to_string()),
-                            confidence: 0.4,
-                        });
-                    }
+                PromptNode::Context(ctx) if ctx.content.len() < 10 && !ctx.content.is_empty() => {
+                    ambiguities.push(Ambiguity {
+                        text: ctx.content.clone(),
+                        span: ctx.span,
+                        interpretations: vec![
+                            "Context too short to be meaningful".to_string(),
+                            "May be a fragment".to_string(),
+                        ],
+                        recommended_resolution: Some("Provide more context".to_string()),
+                        confidence: 0.4,
+                    });
+                }
                 _ => {}
             }
         }

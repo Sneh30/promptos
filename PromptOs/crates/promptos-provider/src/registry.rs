@@ -44,10 +44,7 @@ impl ProviderRegistry {
         self.providers.keys().copied().collect()
     }
 
-    pub fn resolve_provider(
-        &self,
-        model_id: &str,
-    ) -> Option<(ProviderId, &dyn ModelProvider)> {
+    pub fn resolve_provider(&self, model_id: &str) -> Option<(ProviderId, &dyn ModelProvider)> {
         for (id, provider) in &self.providers {
             if provider.supported_models().iter().any(|m| m == model_id) {
                 debug!("Provider resolve — model={}, provider={:?}", model_id, id);
