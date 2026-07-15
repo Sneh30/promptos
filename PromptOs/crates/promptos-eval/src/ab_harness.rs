@@ -24,6 +24,12 @@ pub trait OutputEvaluator: Send + Sync {
 
 pub struct HeuristicEvaluator;
 
+impl Default for HeuristicEvaluator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl HeuristicEvaluator {
     pub fn new() -> Self {
         Self

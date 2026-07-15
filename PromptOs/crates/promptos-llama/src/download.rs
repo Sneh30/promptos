@@ -1,4 +1,4 @@
-use log::{info, warn};
+use log::info;
 use std::path::{Path, PathBuf};
 
 const DEFAULT_MODEL_URL: &str = "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf";
@@ -6,6 +6,12 @@ const DEFAULT_MODEL_FILENAME: &str = "qwen2.5-0.5b-instruct-q4_k_m.gguf";
 
 pub struct ModelDownloader {
     models_dir: PathBuf,
+}
+
+impl Default for ModelDownloader {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl ModelDownloader {

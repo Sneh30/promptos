@@ -8,7 +8,7 @@ static COMPILER: once_cell::sync::Lazy<Mutex<Option<LlamaCompiler>>> =
     once_cell::sync::Lazy::new(|| Mutex::new(None));
 
 #[no_mangle]
-pub extern "C" fn promptos_llm_init(model_path: *const c_char) -> i32 {
+pub unsafe extern "C" fn promptos_llm_init(model_path: *const c_char) -> i32 {
     let path = unsafe {
         if model_path.is_null() {
             return -1;
@@ -43,7 +43,7 @@ pub extern "C" fn promptos_llm_is_loaded() -> i32 {
 }
 
 #[no_mangle]
-pub extern "C" fn promptos_llm_compile(
+pub unsafe extern "C" fn promptos_llm_compile(
     input: *const c_char,
     output: *mut c_char,
     output_max_len: i32,
@@ -109,7 +109,7 @@ pub extern "C" fn promptos_llm_unload() -> i32 {
 }
 
 #[no_mangle]
-pub extern "C" fn promptos_llm_download_model(model_path: *mut c_char, max_len: i32) -> i32 {
+pub unsafe extern "C" fn promptos_llm_download_model(model_path: *mut c_char, max_len: i32) -> i32 {
     let downloader = ModelDownloader::new();
 
     if downloader.is_model_downloaded() {
@@ -150,7 +150,7 @@ pub extern "C" fn promptos_llm_download_model(model_path: *mut c_char, max_len: 
 }
 
 #[no_mangle]
-pub extern "C" fn promptos_llm_free_string(s: *mut c_char) {
+pub unsafe extern "C" fn promptos_llm_free_string(s: *mut c_char) {
     if !s.is_null() {
         unsafe {
             let _ = CString::from_raw(s);

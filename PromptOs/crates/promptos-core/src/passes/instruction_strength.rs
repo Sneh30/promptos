@@ -16,6 +16,7 @@ const WEAK_PATTERNS: &[(&str, &str)] = &[
     ("can you try to", ""),
 ];
 
+#[allow(dead_code)]
 const STRONG_PREFIXES: &[&str] = &[
     "You must",
     "Required:",

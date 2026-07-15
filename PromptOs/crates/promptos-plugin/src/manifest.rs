@@ -15,6 +15,7 @@ pub struct PluginMeta {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct PluginPermissions {
     #[serde(default)]
     pub network: bool,
@@ -24,15 +25,6 @@ pub struct PluginPermissions {
     pub api_keys: Vec<String>,
 }
 
-impl Default for PluginPermissions {
-    fn default() -> Self {
-        Self {
-            network: false,
-            filesystem: false,
-            api_keys: Vec::new(),
-        }
-    }
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PluginInfo {

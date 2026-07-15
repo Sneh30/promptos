@@ -1,6 +1,5 @@
 use crate::bridge::{InferenceConfig, InferenceOutput};
-use log::{debug, info, warn};
-use regex::Regex;
+use log::{info, warn};
 use std::time::Instant;
 
 const DEFAULT_SYSTEM_PROMPT: &str = "You are a precise, concise assistant.";

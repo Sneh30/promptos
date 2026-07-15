@@ -5,6 +5,7 @@ use std::sync::Mutex;
 
 pub struct ProfileManager {
     profiles: Mutex<HashMap<String, ModelProfile>>,
+    #[allow(dead_code)]
     profiles_dir: PathBuf,
 }
 
@@ -46,7 +47,7 @@ impl ProfileManager {
         {
             let entry = entry.map_err(|e| format!("Cannot read entry: {}", e))?;
             let path = entry.path();
-            if path.extension().map_or(false, |e| e == "toml") {
+            if path.extension().is_some_and(|e| e == "toml") {
                 let content = std::fs::read_to_string(&path)
                     .map_err(|e| format!("Cannot read profile {}: {}", path.display(), e))?;
                 match toml::from_str::<ModelProfile>(&content) {

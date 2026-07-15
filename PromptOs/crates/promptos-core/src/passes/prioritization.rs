@@ -55,7 +55,7 @@ impl OptimizationPass for PrioritizationOrderingPass {
         };
 
         ast.children.sort_by_key(|a| priority(a));
-        let _original_order: Vec<u8> = ast.children.iter().map(|c| priority(c)).collect();
+        let _original_order: Vec<u8> = ast.children.iter().map(priority).collect();
 
         info!("Pass [prioritization] — exit, reordering complete");
         Ok(PassResult {

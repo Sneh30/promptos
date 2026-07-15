@@ -1,3 +1,5 @@
+#![allow(clippy::missing_safety_doc)]
+
 pub mod bridge;
 pub mod compiler;
 pub mod download;

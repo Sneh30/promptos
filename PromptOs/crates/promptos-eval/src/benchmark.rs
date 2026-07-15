@@ -45,6 +45,7 @@ pub struct CategorySummary {
 }
 
 pub struct BenchmarkSuite {
+    #[allow(dead_code)]
     name: String,
     prompts: Vec<BenchmarkPrompt>,
 }

@@ -3,6 +3,12 @@ use async_trait::async_trait;
 
 pub struct GoogleProvider;
 
+impl Default for GoogleProvider {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GoogleProvider {
     pub fn new() -> Self {
         Self

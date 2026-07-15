@@ -1,7 +1,7 @@
-use log::{debug, info, warn};
+use log::{debug, info};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::sync::Mutex;
 use uuid::Uuid;
 
@@ -217,6 +217,7 @@ impl HistoryManager {
         std::fs::write(&index_path, &data).map_err(|e| format!("Index write error: {}", e))
     }
 
+    #[allow(dead_code)]
     fn load_index(&self) -> Result<(), String> {
         let index_path = format!("{}/index.msgpack", self.config.storage_dir);
         if Path::new(&index_path).exists() {

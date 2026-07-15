@@ -15,6 +15,12 @@ const SERVICE_NAME: &str = "com.promptos.app.api-keys";
 
 pub struct KeychainManager;
 
+impl Default for KeychainManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl KeychainManager {
     pub fn new() -> Self {
         Self

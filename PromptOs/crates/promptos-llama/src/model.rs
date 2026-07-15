@@ -6,6 +6,7 @@ use std::path::Path;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
+#[allow(dead_code)]
 const INACTIVITY_TIMEOUT: Duration = Duration::from_secs(120);
 
 pub struct ModelManager {
@@ -16,7 +17,9 @@ pub struct ModelManager {
 struct ActiveModel {
     model_path: String,
     last_used: Instant,
+    #[allow(dead_code)]
     sha256: String,
+    #[allow(dead_code)]
     size_bytes: u64,
 }
 

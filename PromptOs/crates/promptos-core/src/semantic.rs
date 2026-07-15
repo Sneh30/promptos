@@ -92,8 +92,8 @@ impl RuleBasedAnalyzer {
                         });
                     }
                 }
-                PromptNode::Context(ctx) => {
-                    if ctx.content.len() < 10 && !ctx.content.is_empty() {
+                PromptNode::Context(ctx)
+                    if ctx.content.len() < 10 && !ctx.content.is_empty() => {
                         ambiguities.push(Ambiguity {
                             text: ctx.content.clone(),
                             span: ctx.span,
@@ -105,7 +105,6 @@ impl RuleBasedAnalyzer {
                             confidence: 0.4,
                         });
                     }
-                }
                 _ => {}
             }
         }

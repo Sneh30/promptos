@@ -35,7 +35,7 @@ impl OptimizationPass for CotScaffoldingPass {
             "Pass [cot_scaffolding] — entering, target_model={}",
             ctx.target_model
         );
-        let needs_cot = ast.annotations.intent.as_ref().map_or(false, |i| {
+        let needs_cot = ast.annotations.intent.as_ref().is_some_and(|i| {
             matches!(i.complexity, Complexity::Complex | Complexity::VeryComplex)
         });
 

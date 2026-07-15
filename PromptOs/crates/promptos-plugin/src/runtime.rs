@@ -6,13 +6,21 @@ use std::sync::Mutex;
 
 pub struct PluginHost {
     plugins: Mutex<HashMap<String, PluginInstance>>,
+    #[allow(dead_code)]
     allowed_dirs: Vec<String>,
 }
 
 struct PluginInstance {
     info: PluginInfo,
+    #[allow(dead_code)]
     wasm_bytes: Vec<u8>,
     enabled: bool,
+}
+
+impl Default for PluginHost {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl PluginHost {

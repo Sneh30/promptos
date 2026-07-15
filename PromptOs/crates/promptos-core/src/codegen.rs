@@ -74,6 +74,12 @@ pub struct AnthropicCodeGenerator {
     inner: DefaultCodeGenerator,
 }
 
+impl Default for AnthropicCodeGenerator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AnthropicCodeGenerator {
     pub fn new() -> Self {
         Self {
@@ -105,6 +111,12 @@ pub struct OpenAICodeGenerator {
     inner: DefaultCodeGenerator,
 }
 
+impl Default for OpenAICodeGenerator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl OpenAICodeGenerator {
     pub fn new() -> Self {
         Self {
@@ -134,6 +146,12 @@ impl ModelCodeGenerator for OpenAICodeGenerator {
 
 pub struct GoogleCodeGenerator {
     inner: DefaultCodeGenerator,
+}
+
+impl Default for GoogleCodeGenerator {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl GoogleCodeGenerator {

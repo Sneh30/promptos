@@ -6,6 +6,12 @@ pub struct ProviderRegistry {
     providers: HashMap<ProviderId, Box<dyn ModelProvider>>,
 }
 
+impl Default for ProviderRegistry {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ProviderRegistry {
     pub fn new() -> Self {
         Self {
@@ -26,12 +32,12 @@ impl ProviderRegistry {
         self.register(Box::new(crate::GoogleProvider::new()));
     }
 
-    pub fn get(&self, id: &ProviderId) -> Option<&Box<dyn ModelProvider>> {
-        self.providers.get(id)
+    pub fn get(&self, id: &ProviderId) -> Option<&dyn ModelProvider> {
+        self.providers.get(id).map(|b| &**b)
     }
 
-    pub fn providers(&self) -> Vec<&Box<dyn ModelProvider>> {
-        self.providers.values().collect()
+    pub fn providers(&self) -> Vec<&dyn ModelProvider> {
+        self.providers.values().map(|b| &**b).collect()
     }
 
     pub fn provider_ids(&self) -> Vec<ProviderId> {
@@ -41,18 +47,18 @@ impl ProviderRegistry {
     pub fn resolve_provider(
         &self,
         model_id: &str,
-    ) -> Option<(ProviderId, &Box<dyn ModelProvider>)> {
+    ) -> Option<(ProviderId, &dyn ModelProvider)> {
         for (id, provider) in &self.providers {
             if provider.supported_models().iter().any(|m| m == model_id) {
                 debug!("Provider resolve — model={}, provider={:?}", model_id, id);
-                return Some((*id, provider));
+                return Some((*id, &**provider));
             }
             if model_id.contains(id.as_str()) {
                 debug!(
                     "Provider resolve — model={} (contains), provider={:?}",
                     model_id, id
                 );
-                return Some((*id, provider));
+                return Some((*id, &**provider));
             }
         }
         warn!(

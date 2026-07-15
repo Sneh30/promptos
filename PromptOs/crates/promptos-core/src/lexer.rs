@@ -186,8 +186,8 @@ impl Lexer {
             s.push_str("- ");
             self.skip_whitespace();
             s.push_str(&self.read_line());
-        } else if self.peek().map_or(false, |c| c.is_ascii_digit()) {
-            while self.peek().map_or(false, |c| c.is_ascii_digit()) {
+        } else if self.peek().is_some_and(|c| c.is_ascii_digit()) {
+            while self.peek().is_some_and(|c| c.is_ascii_digit()) {
                 if let Some(ch) = self.advance() {
                     s.push(ch);
                 }
@@ -273,7 +273,7 @@ impl Iterator for Lexer {
 pub fn tokenize(input: &str) -> Vec<Token> {
     let mut tokens = Vec::new();
     let mut lexer = Lexer::new(input);
-    while let Some(token) = lexer.next() {
+    for token in lexer.by_ref() {
         if token.kind != TokenKind::Newline {
             tokens.push(token);
         }

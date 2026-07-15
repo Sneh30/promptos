@@ -85,6 +85,7 @@ impl Parser {
         }
     }
 
+    #[allow(dead_code)]
     fn peek(&self) -> Option<&Token> {
         self.tokens.get(self.position + 1)
     }
@@ -267,8 +268,8 @@ impl Parser {
             });
         }
 
-        if lower.contains("example") || lower.contains("for instance") || lower.contains("e.g.") {
-            if text.contains("->") || text.contains("=>") {
+        if (lower.contains("example") || lower.contains("for instance") || lower.contains("e.g."))
+            && (text.contains("->") || text.contains("=>")) {
                 let parts: Vec<&str> = if text.contains("->") {
                     text.splitn(2, "->").collect()
                 } else {
@@ -283,7 +284,6 @@ impl Parser {
                     });
                 }
             }
-        }
 
         PromptNode::Context(Context {
             content: text.to_string(),

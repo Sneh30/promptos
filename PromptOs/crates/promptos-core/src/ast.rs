@@ -25,6 +25,7 @@ impl SourceSpan {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[allow(clippy::large_enum_variant)]
 pub enum PromptNode {
     Root(PromptRoot),
     Section(Section),
@@ -68,6 +69,7 @@ impl PromptRootBuilder {
         }
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn add(mut self, node: PromptNode) -> Self {
         self.children.push(node);
         self

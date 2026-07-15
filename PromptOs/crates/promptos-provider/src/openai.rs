@@ -3,6 +3,12 @@ use async_trait::async_trait;
 
 pub struct OpenAIProvider;
 
+impl Default for OpenAIProvider {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl OpenAIProvider {
     pub fn new() -> Self {
         Self

@@ -1,6 +1,6 @@
 use super::*;
 use async_trait::async_trait;
-use log::{debug, info};
+use log::info;
 use std::collections::HashSet;
 
 pub struct RedundancyEliminationPass;
@@ -37,7 +37,7 @@ impl OptimizationPass for RedundancyEliminationPass {
     }
 
     async fn run(&self, ast: &mut PromptRoot, _ctx: &PassContext) -> Result<PassResult, PassError> {
-        let before_tokens = ast
+        let _before_tokens = ast
             .children
             .iter()
             .map(|c| format!("{:?}", c).split_whitespace().count())

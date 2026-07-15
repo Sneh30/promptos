@@ -1,4 +1,4 @@
-use crate::benchmark::{BenchmarkResult, BenchmarkSuiteResult, CategorySummary};
+use crate::benchmark::BenchmarkSuiteResult;
 use log::{info, warn};
 
 #[derive(Debug, Clone)]

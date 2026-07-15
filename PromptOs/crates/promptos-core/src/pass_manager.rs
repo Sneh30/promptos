@@ -5,6 +5,7 @@ use crate::semantic::PassContext;
 pub struct PassManager {
     passes: Vec<Box<dyn OptimizationPass>>,
     mode: CompilationMode,
+    #[allow(dead_code)]
     target_model: String,
     user_config: UserConfig,
 }

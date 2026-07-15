@@ -3,6 +3,12 @@ use async_trait::async_trait;
 
 pub struct AnthropicProvider;
 
+impl Default for AnthropicProvider {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AnthropicProvider {
     pub fn new() -> Self {
         Self
