@@ -39,42 +39,33 @@ impl ModelCodeGenerator for DefaultCodeGenerator {
 impl DefaultCodeGenerator {
     fn emit_node(&self, node: &PromptNode) -> String {
         match node {
-            PromptNode::Root(root) => {
-                root.children.iter().map(|c| self.emit_node(c)).collect::<Vec<_>>().join("\n\n")
-            }
+            PromptNode::Root(root) => root
+                .children
+                .iter()
+                .map(|c| self.emit_node(c))
+                .collect::<Vec<_>>()
+                .join("\n\n"),
             PromptNode::Section(section) => {
                 let heading = "#".repeat(section.level as usize);
                 let header = format!("{} {}", heading, section.heading);
-                let body = section.children.iter()
+                let body = section
+                    .children
+                    .iter()
                     .map(|c| self.emit_node(c))
                     .collect::<Vec<_>>()
                     .join("\n");
                 format!("{}\n{}", header, body)
             }
-            PromptNode::Instruction(instr) => {
-                instr.object.clone()
-            }
-            PromptNode::Constraint(constraint) => {
-                constraint.value.clone()
-            }
-            PromptNode::Context(ctx) => {
-                ctx.content.clone()
-            }
-            PromptNode::FormatSpec(spec) => {
-                spec.format_type.clone()
-            }
-            PromptNode::RoleSpec(role) => {
-                role.role.clone()
-            }
+            PromptNode::Instruction(instr) => instr.object.clone(),
+            PromptNode::Constraint(constraint) => constraint.value.clone(),
+            PromptNode::Context(ctx) => ctx.content.clone(),
+            PromptNode::FormatSpec(spec) => spec.format_type.clone(),
+            PromptNode::RoleSpec(role) => role.role.clone(),
             PromptNode::Example(ex) => {
                 format!("Input: {}\nOutput: {}", ex.input, ex.output)
             }
-            PromptNode::MetaInstruction(meta) => {
-                meta.content.clone()
-            }
-            PromptNode::Block(block) => {
-                block.content.clone()
-            }
+            PromptNode::MetaInstruction(meta) => meta.content.clone(),
+            PromptNode::Block(block) => block.content.clone(),
         }
     }
 }
@@ -98,11 +89,7 @@ impl ModelCodeGenerator for AnthropicCodeGenerator {
 
     fn generate(&self, ast: &PromptRoot, profile: Option<&ModelProfileData>) -> CompiledPrompt {
         let inner_text = self.inner.emit_node(&PromptNode::Root(ast.clone()));
-        let text = format!(
-            "<instructions>\n{}\n</instructions>\n\n{}",
-            inner_text,
-            ""
-        );
+        let text = format!("<instructions>\n{}\n</instructions>\n\n{}", inner_text, "");
         CompiledPrompt {
             text,
             model_id: "claude-3.5-sonnet".to_string(),
@@ -179,7 +166,11 @@ impl ModelCodeGenerator for GoogleCodeGenerator {
 pub fn create_generator(model_id: &str) -> Box<dyn ModelCodeGenerator> {
     match model_id {
         id if id.contains("claude") => Box::new(AnthropicCodeGenerator::new()),
-        id if id.contains("gpt") || id.contains("openai") || id.contains("o1") || id.contains("o3") => {
+        id if id.contains("gpt")
+            || id.contains("openai")
+            || id.contains("o1")
+            || id.contains("o3") =>
+        {
             Box::new(OpenAICodeGenerator::new())
         }
         id if id.contains("gemini") => Box::new(GoogleCodeGenerator::new()),
@@ -193,15 +184,13 @@ mod tests {
 
     #[test]
     fn test_default_generator() {
-        let ast = PromptRoot::new(vec![
-            PromptNode::Instruction(Instruction {
-                verb: InstructionVerb::Write,
-                object: "Write a poem".to_string(),
-                modifiers: Vec::new(),
-                confidence: 0.9,
-                span: SourceSpan::new(Position::new(1, 1), Position::new(1, 12)),
-            }),
-        ]);
+        let ast = PromptRoot::new(vec![PromptNode::Instruction(Instruction {
+            verb: InstructionVerb::Write,
+            object: "Write a poem".to_string(),
+            modifiers: Vec::new(),
+            confidence: 0.9,
+            span: SourceSpan::new(Position::new(1, 1), Position::new(1, 12)),
+        })]);
         let gen = DefaultCodeGenerator::new("test-model");
         let compiled = gen.generate(&ast, None);
         assert!(!compiled.text.is_empty());
@@ -210,15 +199,13 @@ mod tests {
 
     #[test]
     fn test_anthropic_generator() {
-        let ast = PromptRoot::new(vec![
-            PromptNode::Instruction(Instruction {
-                verb: InstructionVerb::Write,
-                object: "Write a poem".to_string(),
-                modifiers: Vec::new(),
-                confidence: 0.9,
-                span: SourceSpan::new(Position::new(1, 1), Position::new(1, 12)),
-            }),
-        ]);
+        let ast = PromptRoot::new(vec![PromptNode::Instruction(Instruction {
+            verb: InstructionVerb::Write,
+            object: "Write a poem".to_string(),
+            modifiers: Vec::new(),
+            confidence: 0.9,
+            span: SourceSpan::new(Position::new(1, 1), Position::new(1, 12)),
+        })]);
         let gen = AnthropicCodeGenerator::new();
         let compiled = gen.generate(&ast, None);
         assert!(compiled.text.contains("<instructions>"));

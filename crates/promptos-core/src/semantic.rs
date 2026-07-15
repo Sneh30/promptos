@@ -55,9 +55,9 @@ impl RuleBasedAnalyzer {
         for child in &ast.children {
             if let PromptNode::Instruction(instr) = child {
                 let complexity = match instr.verb {
-                    InstructionVerb::Analyze | InstructionVerb::Explain | InstructionVerb::Compare => {
-                        Complexity::Moderate
-                    }
+                    InstructionVerb::Analyze
+                    | InstructionVerb::Explain
+                    | InstructionVerb::Compare => Complexity::Moderate,
                     InstructionVerb::Design | InstructionVerb::Optimize => Complexity::Complex,
                     _ => Complexity::Simple,
                 };
@@ -82,9 +82,12 @@ impl RuleBasedAnalyzer {
                             text: instr.object.clone(),
                             span: instr.span,
                             interpretations: vec![
-                                "Referent is ambiguous, could refer to multiple subjects".to_string(),
+                                "Referent is ambiguous, could refer to multiple subjects"
+                                    .to_string(),
                             ],
-                            recommended_resolution: Some("Replace pronoun with explicit noun".to_string()),
+                            recommended_resolution: Some(
+                                "Replace pronoun with explicit noun".to_string(),
+                            ),
                             confidence: 0.6,
                         });
                     }
@@ -132,7 +135,8 @@ impl RuleBasedAnalyzer {
                     contradictions.push(Contradiction {
                         constraint_a: ca.span,
                         constraint_b: cb.span,
-                        description: "Concise and detailed are contradictory constraints".to_string(),
+                        description: "Concise and detailed are contradictory constraints"
+                            .to_string(),
                     });
                 }
                 if ca.value.to_lowercase().contains("json")
@@ -141,7 +145,8 @@ impl RuleBasedAnalyzer {
                     contradictions.push(Contradiction {
                         constraint_a: ca.span,
                         constraint_b: cb.span,
-                        description: "JSON and Markdown output formats are contradictory".to_string(),
+                        description: "JSON and Markdown output formats are contradictory"
+                            .to_string(),
                     });
                 }
             }
@@ -151,14 +156,22 @@ impl RuleBasedAnalyzer {
 
     fn detect_context_gaps(&self, ast: &PromptRoot) -> Vec<ContextGap> {
         let mut gaps = Vec::new();
-        let has_instruction = ast.children.iter().any(|c| matches!(c, PromptNode::Instruction(_)));
-        let has_context = ast.children.iter().any(|c| matches!(c, PromptNode::Context(_)));
+        let has_instruction = ast
+            .children
+            .iter()
+            .any(|c| matches!(c, PromptNode::Instruction(_)));
+        let has_context = ast
+            .children
+            .iter()
+            .any(|c| matches!(c, PromptNode::Context(_)));
 
         if !has_instruction {
             gaps.push(ContextGap {
                 gap_type: GapType::MissingInstruction,
                 description: "No explicit instruction detected".to_string(),
-                suggested_addition: Some("Add a clear instruction specifying what the model should do".to_string()),
+                suggested_addition: Some(
+                    "Add a clear instruction specifying what the model should do".to_string(),
+                ),
             });
         }
 
@@ -186,7 +199,12 @@ impl SemanticAnalyzer for RuleBasedAnalyzer {
         let contradictions = self.detect_contradictions(ast);
         let context_gaps = self.detect_context_gaps(ast);
 
-        let original_text = ast.children.iter().map(|c| format!("{:?}", c)).collect::<Vec<_>>().join(" ");
+        let original_text = ast
+            .children
+            .iter()
+            .map(|c| format!("{:?}", c))
+            .collect::<Vec<_>>()
+            .join(" ");
         let token_count = original_text.split_whitespace().count();
 
         let annotations = Annotations {

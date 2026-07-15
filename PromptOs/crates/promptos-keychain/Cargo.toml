@@ -1,0 +1,16 @@
+[package]
+name = "promptos-keychain"
+version = "0.1.0"
+edition = "2021"
+description = "macOS Keychain integration for PromptOS API key storage"
+
+[lib]
+name = "promptos_keychain"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+security-framework.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true

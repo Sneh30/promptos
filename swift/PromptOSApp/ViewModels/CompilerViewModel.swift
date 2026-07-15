@@ -110,12 +110,10 @@ class CompilerViewModel: ObservableObject {
         // Instruction strengthening
         let weakPatterns = ["could you", "maybe", "i'd like if", "if possible", "would you mind"]
         var strengthened = false
-        for pattern in weakPatterns {
-            if lower.contains(pattern) {
-                text = text.replacingOccurrences(of: pattern, with: "", options: .caseInsensitive)
-                text = text.trimmingCharacters(in: .whitespaces)
-                strengthened = true
-            }
+        for pattern in weakPatterns where lower.contains(pattern) {
+            text = text.replacingOccurrences(of: pattern, with: "", options: .caseInsensitive)
+            text = text.trimmingCharacters(in: .whitespaces)
+            strengthened = true
         }
         if strengthened || !text.hasPrefix("Write") && !text.hasPrefix("Analyze") && !text.hasPrefix("Explain") {
             passesApplied.append("instruction-strengthening")

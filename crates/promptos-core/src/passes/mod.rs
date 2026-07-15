@@ -1,24 +1,24 @@
-mod redundancy;
 mod ambiguity;
 mod context_optimizer;
-mod instruction_strength;
-mod format_normalizer;
-mod token_budget;
-mod prioritization;
 mod cot_scaffolding;
-mod persona;
 mod few_shot;
+mod format_normalizer;
+mod instruction_strength;
+mod persona;
+mod prioritization;
+mod redundancy;
+mod token_budget;
 
-pub use redundancy::*;
 pub use ambiguity::*;
 pub use context_optimizer::*;
-pub use instruction_strength::*;
-pub use format_normalizer::*;
-pub use token_budget::*;
-pub use prioritization::*;
 pub use cot_scaffolding::*;
-pub use persona::*;
 pub use few_shot::*;
+pub use format_normalizer::*;
+pub use instruction_strength::*;
+pub use persona::*;
+pub use prioritization::*;
+pub use redundancy::*;
+pub use token_budget::*;
 
 use crate::ast::*;
 use crate::semantic::PassContext;

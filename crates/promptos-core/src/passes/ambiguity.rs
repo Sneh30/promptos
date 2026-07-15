@@ -20,7 +20,10 @@ impl OptimizationPass for AmbiguityResolutionPass {
 
     async fn run(&self, ast: &mut PromptRoot, _ctx: &PassContext) -> Result<PassResult, PassError> {
         let ambiguities = ast.annotations.detected_ambiguities.clone();
-        info!("Pass [ambiguity] — entering, ambiguities={}", ambiguities.len());
+        info!(
+            "Pass [ambiguity] — entering, ambiguities={}",
+            ambiguities.len()
+        );
         let mut resolved = 0usize;
 
         for ambiguity in &ambiguities {
@@ -34,24 +37,37 @@ impl OptimizationPass for AmbiguityResolutionPass {
             }
         }
 
-        info!("Pass [ambiguity] — exit, resolved={}, remaining={}", resolved, ambiguities.len() - resolved);
+        info!(
+            "Pass [ambiguity] — exit, resolved={}, remaining={}",
+            resolved,
+            ambiguities.len() - resolved
+        );
         Ok(PassResult {
             pass_name: self.name().to_string(),
             tokens_saved: 0,
             applied: resolved > 0,
-            description: format!("Resolved {} ambiguities automatically, {} flagged for user", 
-                resolved, ambiguities.len() - resolved),
+            description: format!(
+                "Resolved {} ambiguities automatically, {} flagged for user",
+                resolved,
+                ambiguities.len() - resolved
+            ),
         })
     }
 
     fn verify(&self, ast: &PromptRoot, _original: &PromptRoot) -> Result<(), VerificationFailure> {
-        let unresolved: Vec<&Ambiguity> = ast.annotations.detected_ambiguities.iter()
+        let unresolved: Vec<&Ambiguity> = ast
+            .annotations
+            .detected_ambiguities
+            .iter()
             .filter(|a| a.confidence > 0.9 && a.recommended_resolution.is_some())
             .collect();
         if unresolved.len() > 5 {
             return Err(VerificationFailure {
                 pass_name: self.name().to_string(),
-                reason: format!("{} high-confidence ambiguities unresolved", unresolved.len()),
+                reason: format!(
+                    "{} high-confidence ambiguities unresolved",
+                    unresolved.len()
+                ),
             });
         }
         Ok(())

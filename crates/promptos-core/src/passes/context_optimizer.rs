@@ -19,16 +19,27 @@ impl OptimizationPass for ContextWindowOptimizationPass {
     }
 
     async fn run(&self, ast: &mut PromptRoot, ctx: &PassContext) -> Result<PassResult, PassError> {
-        let context_limit = ctx.model_profile.as_ref().map_or(128000, |p| p.context_limit_input) as usize;
+        let context_limit = ctx
+            .model_profile
+            .as_ref()
+            .map_or(128000, |p| p.context_limit_input) as usize;
         let current_tokens = ast.annotations.token_count_original;
-        info!("Pass [context_optimizer] — entering, tokens={}, context_limit={}", current_tokens, context_limit);
+        info!(
+            "Pass [context_optimizer] — entering, tokens={}, context_limit={}",
+            current_tokens, context_limit
+        );
         let mut tokens_saved = 0isize;
 
         if current_tokens > context_limit / 2 {
-            let mut scored: Vec<(usize, f32)> = ast.children.iter().enumerate().map(|(i, child)| {
-                let score = self.score_relevance(child);
-                (i, score)
-            }).collect();
+            let mut scored: Vec<(usize, f32)> = ast
+                .children
+                .iter()
+                .enumerate()
+                .map(|(i, child)| {
+                    let score = self.score_relevance(child);
+                    (i, score)
+                })
+                .collect();
 
             scored.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
 
@@ -44,7 +55,11 @@ impl OptimizationPass for ContextWindowOptimizationPass {
             }
         }
 
-        info!("Pass [context_optimizer] — exit, tokens_saved={}, children_after={}", tokens_saved, ast.children.len());
+        info!(
+            "Pass [context_optimizer] — exit, tokens_saved={}, children_after={}",
+            tokens_saved,
+            ast.children.len()
+        );
         Ok(PassResult {
             pass_name: self.name().to_string(),
             tokens_saved,
@@ -54,7 +69,10 @@ impl OptimizationPass for ContextWindowOptimizationPass {
     }
 
     fn verify(&self, ast: &PromptRoot, _original: &PromptRoot) -> Result<(), VerificationFailure> {
-        let has_instruction = ast.children.iter().any(|c| matches!(c, PromptNode::Instruction(_)));
+        let has_instruction = ast
+            .children
+            .iter()
+            .any(|c| matches!(c, PromptNode::Instruction(_)));
         if !has_instruction && !ast.children.is_empty() {
             return Err(VerificationFailure {
                 pass_name: self.name().to_string(),
@@ -76,7 +94,11 @@ impl ContextWindowOptimizationPass {
             PromptNode::Context(ctx) => ctx.relevance_score,
             PromptNode::MetaInstruction(_) => 0.3,
             PromptNode::Section(s) => {
-                if s.children.is_empty() { 0.2 } else { 0.5 }
+                if s.children.is_empty() {
+                    0.2
+                } else {
+                    0.5
+                }
             }
             PromptNode::Block(_) => 0.4,
             PromptNode::Root(_) => 1.0,
@@ -90,15 +112,13 @@ mod tests {
 
     #[tokio::test]
     async fn test_context_optimization_short_prompt() {
-        let mut ast = PromptRoot::new(vec![
-            PromptNode::Instruction(Instruction {
-                verb: InstructionVerb::Write,
-                object: "Write a short poem".to_string(),
-                modifiers: Vec::new(),
-                confidence: 0.9,
-                span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 20)),
-            }),
-        ]);
+        let mut ast = PromptRoot::new(vec![PromptNode::Instruction(Instruction {
+            verb: InstructionVerb::Write,
+            object: "Write a short poem".to_string(),
+            modifiers: Vec::new(),
+            confidence: 0.9,
+            span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 20)),
+        })]);
         ast.annotations.token_count_original = 5;
         let pass = ContextWindowOptimizationPass;
         let ctx = PassContext {

@@ -1,0 +1,19 @@
+disabled_rules:
+  - multiple_closures_with_trailing_closure
+  - trailing_comma
+  - file_length
+  - type_body_length
+
+opt_in_rules:
+  - anyobject_protocol
+
+identifier_name:
+  allowed_symbols: ["_"]
+  min_length: 1
+  max_length: 60
+
+line_length: 200
+
+cyclomatic_complexity: 15
+
+function_body_length: 100

@@ -93,7 +93,9 @@ impl fmt::Display for ProviderError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Authentication(msg) => write!(f, "Authentication error: {}", msg),
-            Self::RateLimited { retry_after } => write!(f, "Rate limited (retry after: {:?})", retry_after),
+            Self::RateLimited { retry_after } => {
+                write!(f, "Rate limited (retry after: {:?})", retry_after)
+            }
             Self::QuotaExceeded(msg) => write!(f, "Quota exceeded: {}", msg),
             Self::ModelUnavailable(msg) => write!(f, "Model unavailable: {}", msg),
             Self::InvalidRequest(msg) => write!(f, "Invalid request: {}", msg),
@@ -111,7 +113,11 @@ pub trait ModelProvider: Send + Sync {
     fn id(&self) -> ProviderId;
     fn name(&self) -> &str;
     fn supported_models(&self) -> Vec<String>;
-    async fn send_prompt(&self, prompt: &CompiledPrompt, key: &ApiKey) -> Result<ModelResponse, ProviderError>;
+    async fn send_prompt(
+        &self,
+        prompt: &CompiledPrompt,
+        key: &ApiKey,
+    ) -> Result<ModelResponse, ProviderError>;
     fn estimate_cost(&self, prompt: &CompiledPrompt) -> CostEstimate;
     async fn validate_key(&self, key: &ApiKey) -> Result<bool, ProviderError>;
 }

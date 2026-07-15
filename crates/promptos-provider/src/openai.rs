@@ -42,7 +42,11 @@ impl ModelProvider for OpenAIProvider {
         ]
     }
 
-    async fn send_prompt(&self, prompt: &CompiledPrompt, key: &ApiKey) -> Result<ModelResponse, ProviderError> {
+    async fn send_prompt(
+        &self,
+        prompt: &CompiledPrompt,
+        key: &ApiKey,
+    ) -> Result<ModelResponse, ProviderError> {
         let model = self.model_name(&prompt.model_id);
         let client = reqwest::Client::new();
 
@@ -76,7 +80,10 @@ impl ModelProvider for OpenAIProvider {
             return match status.as_u16() {
                 401 => Err(ProviderError::Authentication(text)),
                 429 => Err(ProviderError::RateLimited { retry_after: None }),
-                _ => Err(ProviderError::InvalidRequest(format!("Status {}: {}", status, text))),
+                _ => Err(ProviderError::InvalidRequest(format!(
+                    "Status {}: {}",
+                    status, text
+                ))),
             };
         }
 
@@ -85,7 +92,10 @@ impl ModelProvider for OpenAIProvider {
             .await
             .map_err(|e| ProviderError::Internal(format!("Parse error: {}", e)))?;
 
-        let text = raw["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string();
+        let text = raw["choices"][0]["message"]["content"]
+            .as_str()
+            .unwrap_or("")
+            .to_string();
         let input_tokens = raw["usage"]["prompt_tokens"].as_u64().unwrap_or(0) as u32;
         let output_tokens = raw["usage"]["completion_tokens"].as_u64().unwrap_or(0) as u32;
 
@@ -95,7 +105,10 @@ impl ModelProvider for OpenAIProvider {
             input_tokens,
             output_tokens,
             latency_ms,
-            finish_reason: raw["choices"][0]["finish_reason"].as_str().unwrap_or("stop").to_string(),
+            finish_reason: raw["choices"][0]["finish_reason"]
+                .as_str()
+                .unwrap_or("stop")
+                .to_string(),
             raw_response: raw,
         })
     }

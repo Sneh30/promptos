@@ -1,0 +1,23 @@
+[package]
+name = "promptos-llama"
+version = "0.1.0"
+edition = "2021"
+description = "Local LLM inference via llama.cpp for PromptOS prompt compilation"
+
+[lib]
+name = "promptos_llama"
+crate-type = ["lib", "staticlib", "cdylib"]
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+regex.workspace = true
+sha2.workspace = true
+reqwest = { workspace = true, features = ["blocking"] }
+once_cell = "1"
+log.workspace = true
+env_logger.workspace = true

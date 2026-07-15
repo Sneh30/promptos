@@ -1,0 +1,43 @@
+[profile]
+model_id = "gemini-1.5-pro"
+provider = "google"
+version = "1.0.0"
+last_updated = "2026-01-08"
+
+[specs]
+context_limit_input = 1000000
+context_limit_output = 8192
+max_output_tokens = 8192
+pricing_input_per_mtok = 3.50
+pricing_output_per_mtok = 10.50
+pricing_cached_input_per_mtok = 0.35
+
+[performance]
+reasoning_quality = 0.88
+coding_quality = 0.85
+writing_quality = 0.87
+analysis_quality = 0.89
+structured_extraction_quality = 0.86
+tool_use_reliability = 0.80
+instruction_following = 0.87
+
+[format_reliability]
+xml = 0.75
+markdown = 0.88
+json_structured = 0.90
+json_unstructured = 0.82
+
+[behavior]
+chain_of_thought_effective = true
+self_correction_tendency = 0.35
+verbose_conciseness = 0.45
+long_context_retrieval_accuracy = 0.90
+primacy_effect_bias = 0.15
+recency_effect_bias = 0.25
+
+[safety]
+hallucination_risk_general = 0.10
+hallucination_risk_coding = 0.08
+hallucination_risk_factual = 0.15
+refusal_rate = 0.01
+sycophancy_tendency = 0.35

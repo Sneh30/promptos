@@ -30,8 +30,8 @@ impl PluginHost {
             return Err(format!("Plugin file not found: {}", path));
         }
 
-        let wasm_data = std::fs::read(path)
-            .map_err(|e| format!("Cannot read plugin file: {}", e))?;
+        let wasm_data =
+            std::fs::read(path).map_err(|e| format!("Cannot read plugin file: {}", e))?;
         let wasm_len = wasm_data.len();
 
         let manifest_path = Path::new(path).with_extension("toml");
@@ -51,11 +51,14 @@ impl PluginHost {
         let name = info.name.clone();
 
         let mut plugins = self.plugins.lock().map_err(|e| e.to_string())?;
-        plugins.insert(name.clone(), PluginInstance {
-            info,
-            wasm_bytes: wasm_data,
-            enabled: true,
-        });
+        plugins.insert(
+            name.clone(),
+            PluginInstance {
+                info,
+                wasm_bytes: wasm_data,
+                enabled: true,
+            },
+        );
 
         info!("Plugin loaded — name={}, bytes={}", name, wasm_len);
         Ok(name)
@@ -94,7 +97,10 @@ impl PluginHost {
 
     pub fn get_info(&self, name: &str) -> Result<PluginInfo, String> {
         let plugins = self.plugins.lock().map_err(|e| e.to_string())?;
-        plugins.get(name).map(|p| p.info.clone()).ok_or_else(|| format!("Plugin not found: {}", name))
+        plugins
+            .get(name)
+            .map(|p| p.info.clone())
+            .ok_or_else(|| format!("Plugin not found: {}", name))
     }
 
     pub fn list_plugins(&self) -> Vec<PluginInfo> {
@@ -107,7 +113,10 @@ impl PluginHost {
     pub fn call_hook(&self, _name: &str, _hook: &str, _payload: &[u8]) -> Result<Vec<u8>, String> {
         // WASM execution would go here with wasmtime
         // For now, return empty result as placeholder
-        info!("Plugin hook call — name={}, hook={} (WASM execution not yet implemented)", _name, _hook);
+        info!(
+            "Plugin hook call — name={}, hook={} (WASM execution not yet implemented)",
+            _name, _hook
+        );
         Ok(Vec::new())
     }
 }

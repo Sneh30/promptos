@@ -1,5 +1,5 @@
 use crate::bridge::{InferenceConfig, InferenceOutput};
-use log::{info, warn, debug};
+use log::{debug, info, warn};
 use regex::Regex;
 use std::time::Instant;
 
@@ -42,7 +42,10 @@ pub fn run_inference(
     let start = Instant::now();
     let input_tokens = prompt.split_whitespace().count() as u32;
 
-    info!("Inference — model_path={}, input_tokens={}", model_path, input_tokens);
+    info!(
+        "Inference — model_path={}, input_tokens={}",
+        model_path, input_tokens
+    );
 
     if !std::path::Path::new(model_path).exists() {
         warn!("Inference — model not found at path: {}", model_path);
@@ -58,7 +61,8 @@ pub fn run_inference(
     cmd.arg("-n").arg(config.max_tokens.to_string());
     cmd.arg("--temp").arg(config.temperature.to_string());
     cmd.arg("--top-p").arg(config.top_p.to_string());
-    cmd.arg("--repeat-penalty").arg(config.repeat_penalty.to_string());
+    cmd.arg("--repeat-penalty")
+        .arg(config.repeat_penalty.to_string());
     cmd.arg("--no-display-prompt");
     cmd.arg("-ngl").arg("99");
 
@@ -66,7 +70,12 @@ pub fn run_inference(
         cmd.arg("--seed").arg(seed.to_string());
     }
 
-    let output = cmd.output().map_err(|e| format!("Failed to run llama-completion: {}. Install with: brew install llama.cpp", e))?;
+    let output = cmd.output().map_err(|e| {
+        format!(
+            "Failed to run llama-completion: {}. Install with: brew install llama.cpp",
+            e
+        )
+    })?;
 
     std::fs::remove_file(&tmpfile).ok();
 
@@ -79,7 +88,10 @@ pub fn run_inference(
     let text = extract_completion_output(&raw);
     let elapsed = start.elapsed().as_millis() as u64;
     let out_tokens = text.split_whitespace().count() as u32;
-    info!("Inference — complete, output_tokens={}, inference_time_ms={}", out_tokens, elapsed);
+    info!(
+        "Inference — complete, output_tokens={}, inference_time_ms={}",
+        out_tokens, elapsed
+    );
 
     Ok(InferenceOutput {
         text,

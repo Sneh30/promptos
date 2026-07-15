@@ -10,7 +10,11 @@ fn jaccard_similarity(a: &str, b: &str) -> f64 {
     let set_b: HashSet<&str> = b.split_whitespace().collect();
     let intersection = set_a.intersection(&set_b).count();
     let union = set_a.union(&set_b).count();
-    if union == 0 { 0.0 } else { intersection as f64 / union as f64 }
+    if union == 0 {
+        0.0
+    } else {
+        intersection as f64 / union as f64
+    }
 }
 
 #[async_trait]
@@ -28,7 +32,10 @@ impl OptimizationPass for FewShotOptimizationPass {
     }
 
     async fn run(&self, ast: &mut PromptRoot, _ctx: &PassContext) -> Result<PassResult, PassError> {
-        info!("Pass [few_shot] — entering, children={}", ast.children.len());
+        info!(
+            "Pass [few_shot] — entering, children={}",
+            ast.children.len()
+        );
         let mut optimized = 0;
         let mut tokens_saved = 0isize;
         let mut examples: Vec<(usize, Example)> = Vec::new();
@@ -40,12 +47,18 @@ impl OptimizationPass for FewShotOptimizationPass {
         }
 
         if examples.len() < 2 {
-            info!("Pass [few_shot] — exit, not enough examples ({})", examples.len());
+            info!(
+                "Pass [few_shot] — exit, not enough examples ({})",
+                examples.len()
+            );
             return Ok(PassResult {
                 pass_name: self.name().to_string(),
                 tokens_saved: 0,
                 applied: false,
-                description: format!("{} examples found, need at least 2 for optimization", examples.len()),
+                description: format!(
+                    "{} examples found, need at least 2 for optimization",
+                    examples.len()
+                ),
             });
         }
 
@@ -73,21 +86,32 @@ impl OptimizationPass for FewShotOptimizationPass {
             optimized += 1;
         }
 
-        info!("Pass [few_shot] — exit, optimized={}, tokens_saved={}", optimized, tokens_saved);
+        info!(
+            "Pass [few_shot] — exit, optimized={}, tokens_saved={}",
+            optimized, tokens_saved
+        );
         Ok(PassResult {
             pass_name: self.name().to_string(),
             tokens_saved,
             applied: optimized > 0,
-            description: format!("Optimized {} few-shot examples, saved {} tokens", optimized, tokens_saved),
+            description: format!(
+                "Optimized {} few-shot examples, saved {} tokens",
+                optimized, tokens_saved
+            ),
         })
     }
 
     fn verify(&self, ast: &PromptRoot, _original: &PromptRoot) -> Result<(), VerificationFailure> {
-        let example_count = ast.children.iter().filter(|c| matches!(c, PromptNode::Example(_))).count();
+        let example_count = ast
+            .children
+            .iter()
+            .filter(|c| matches!(c, PromptNode::Example(_)))
+            .count();
         if example_count == 1 {
             return Err(VerificationFailure {
                 pass_name: self.name().to_string(),
-                reason: "Only 1 example remaining after optimization; at least 2 recommended".to_string(),
+                reason: "Only 1 example remaining after optimization; at least 2 recommended"
+                    .to_string(),
             });
         }
         Ok(())
@@ -100,15 +124,13 @@ mod tests {
 
     #[tokio::test]
     async fn test_few_shot_no_examples() {
-        let mut ast = PromptRoot::new(vec![
-            PromptNode::Instruction(Instruction {
-                verb: InstructionVerb::Write,
-                object: "Write code".to_string(),
-                modifiers: Vec::new(),
-                confidence: 0.9,
-                span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 10)),
-            }),
-        ]);
+        let mut ast = PromptRoot::new(vec![PromptNode::Instruction(Instruction {
+            verb: InstructionVerb::Write,
+            object: "Write code".to_string(),
+            modifiers: Vec::new(),
+            confidence: 0.9,
+            span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 10)),
+        })]);
         let pass = FewShotOptimizationPass;
         let ctx = PassContext {
             model_profile: None,

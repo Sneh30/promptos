@@ -35,13 +35,14 @@ impl ModelProvider for GoogleProvider {
     }
 
     fn supported_models(&self) -> Vec<String> {
-        vec![
-            "gemini-1.5-pro".to_string(),
-            "gemini-1.5-flash".to_string(),
-        ]
+        vec!["gemini-1.5-pro".to_string(), "gemini-1.5-flash".to_string()]
     }
 
-    async fn send_prompt(&self, prompt: &CompiledPrompt, key: &ApiKey) -> Result<ModelResponse, ProviderError> {
+    async fn send_prompt(
+        &self,
+        prompt: &CompiledPrompt,
+        key: &ApiKey,
+    ) -> Result<ModelResponse, ProviderError> {
         let client = reqwest::Client::new();
         let url = format!("{}?key={}", self.api_url(&prompt.model_id), key.as_str());
 
@@ -75,7 +76,10 @@ impl ModelProvider for GoogleProvider {
             return match status.as_u16() {
                 401 | 403 => Err(ProviderError::Authentication(text)),
                 429 => Err(ProviderError::RateLimited { retry_after: None }),
-                _ => Err(ProviderError::InvalidRequest(format!("Status {}: {}", status, text))),
+                _ => Err(ProviderError::InvalidRequest(format!(
+                    "Status {}: {}",
+                    status, text
+                ))),
             };
         }
 

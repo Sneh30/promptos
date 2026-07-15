@@ -22,10 +22,14 @@ impl KeychainManager {
 
     pub fn store_api_key(provider: &str, key: &str) -> Result<(), KeychainError> {
         if key.is_empty() {
-            return Err(KeychainError::InvalidInput("API key cannot be empty".to_string()));
+            return Err(KeychainError::InvalidInput(
+                "API key cannot be empty".to_string(),
+            ));
         }
         if provider.is_empty() {
-            return Err(KeychainError::InvalidInput("Provider cannot be empty".to_string()));
+            return Err(KeychainError::InvalidInput(
+                "Provider cannot be empty".to_string(),
+            ));
         }
 
         set_generic_password(SERVICE_NAME, provider, key.as_bytes())
@@ -33,28 +37,26 @@ impl KeychainManager {
     }
 
     pub fn retrieve_api_key(provider: &str) -> Result<String, KeychainError> {
-        let password = get_generic_password(SERVICE_NAME, provider)
-            .map_err(|e| {
-                if e.code() == -25300 {
-                    KeychainError::NotFound
-                } else {
-                    KeychainError::AccessError(e.to_string())
-                }
-            })?;
+        let password = get_generic_password(SERVICE_NAME, provider).map_err(|e| {
+            if e.code() == -25300 {
+                KeychainError::NotFound
+            } else {
+                KeychainError::AccessError(e.to_string())
+            }
+        })?;
 
         String::from_utf8(password)
             .map_err(|_| KeychainError::AccessError("Invalid UTF-8 in stored key".to_string()))
     }
 
     pub fn delete_api_key(provider: &str) -> Result<(), KeychainError> {
-        delete_generic_password(SERVICE_NAME, provider)
-            .map_err(|e| {
-                if e.code() == -25300 {
-                    KeychainError::NotFound
-                } else {
-                    KeychainError::AccessError(e.to_string())
-                }
-            })
+        delete_generic_password(SERVICE_NAME, provider).map_err(|e| {
+            if e.code() == -25300 {
+                KeychainError::NotFound
+            } else {
+                KeychainError::AccessError(e.to_string())
+            }
+        })
     }
 
     pub fn has_key(provider: &str) -> Result<bool, KeychainError> {
@@ -74,7 +76,10 @@ mod tests {
     fn test_store_empty_key() {
         let result = KeychainManager::store_api_key("test-provider", "");
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), KeychainError::InvalidInput(_)));
+        assert!(matches!(
+            result.unwrap_err(),
+            KeychainError::InvalidInput(_)
+        ));
     }
 
     #[test]

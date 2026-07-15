@@ -1,5 +1,5 @@
 use crate::traits::*;
-use log::{info, debug, warn};
+use log::{debug, info, warn};
 use std::collections::HashMap;
 
 pub struct ProviderRegistry {
@@ -38,18 +38,27 @@ impl ProviderRegistry {
         self.providers.keys().copied().collect()
     }
 
-    pub fn resolve_provider(&self, model_id: &str) -> Option<(ProviderId, &Box<dyn ModelProvider>)> {
+    pub fn resolve_provider(
+        &self,
+        model_id: &str,
+    ) -> Option<(ProviderId, &Box<dyn ModelProvider>)> {
         for (id, provider) in &self.providers {
             if provider.supported_models().iter().any(|m| m == model_id) {
                 debug!("Provider resolve — model={}, provider={:?}", model_id, id);
                 return Some((*id, provider));
             }
             if model_id.contains(id.as_str()) {
-                debug!("Provider resolve — model={} (contains), provider={:?}", model_id, id);
+                debug!(
+                    "Provider resolve — model={} (contains), provider={:?}",
+                    model_id, id
+                );
                 return Some((*id, provider));
             }
         }
-        warn!("Provider resolve — no provider found for model: {}", model_id);
+        warn!(
+            "Provider resolve — no provider found for model: {}",
+            model_id
+        );
         None
     }
 
@@ -59,25 +68,36 @@ impl ProviderRegistry {
         prompt: &CompiledPrompt,
         key: &ApiKey,
     ) -> Result<ModelResponse, ProviderError> {
-        let (_id, provider) = self
-            .resolve_provider(model_id)
-            .ok_or_else(|| ProviderError::ModelUnavailable(format!("No provider for model: {}", model_id)))?;
+        let (_id, provider) = self.resolve_provider(model_id).ok_or_else(|| {
+            ProviderError::ModelUnavailable(format!("No provider for model: {}", model_id))
+        })?;
 
-        info!("Provider send_prompt — model={}, prompt_len={}, provider={:?}", model_id, prompt.text.len(), _id);
+        info!(
+            "Provider send_prompt — model={}, prompt_len={}, provider={:?}",
+            model_id,
+            prompt.text.len(),
+            _id
+        );
         let result = provider.send_prompt(prompt, key).await;
         match &result {
-            Ok(resp) => info!("Provider response — model={}, output_len={}, latency_ms={}, finish_reason={}",
-                model_id, resp.output_tokens, resp.latency_ms, resp.finish_reason),
+            Ok(resp) => info!(
+                "Provider response — model={}, output_len={}, latency_ms={}, finish_reason={}",
+                model_id, resp.output_tokens, resp.latency_ms, resp.finish_reason
+            ),
             Err(e) => warn!("Provider error — model={}, error={:?}", model_id, e),
         }
         result
     }
 
     pub fn estimate_cost(&self, model_id: &str, prompt: &CompiledPrompt) -> Option<CostEstimate> {
-        let cost = self.resolve_provider(model_id)
+        let cost = self
+            .resolve_provider(model_id)
             .map(|(_, provider)| provider.estimate_cost(prompt));
         if let Some(ref c) = cost {
-            debug!("Provider estimate_cost — model={}, total_cost={} {}", model_id, c.total_cost, c.currency);
+            debug!(
+                "Provider estimate_cost — model={}, total_cost={} {}",
+                model_id, c.total_cost, c.currency
+            );
         }
         cost
     }

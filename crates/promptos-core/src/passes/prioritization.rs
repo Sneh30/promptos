@@ -19,7 +19,10 @@ impl OptimizationPass for PrioritizationOrderingPass {
     }
 
     async fn run(&self, ast: &mut PromptRoot, _ctx: &PassContext) -> Result<PassResult, PassError> {
-        info!("Pass [prioritization] — entering, children={}", ast.children.len());
+        info!(
+            "Pass [prioritization] — entering, children={}",
+            ast.children.len()
+        );
         let priority = |node: &PromptNode| -> u8 {
             match node {
                 PromptNode::Constraint(c) => match c.severity {
@@ -40,7 +43,11 @@ impl OptimizationPass for PrioritizationOrderingPass {
                 PromptNode::Example(_) => 9,
                 PromptNode::MetaInstruction(_) => 10,
                 PromptNode::Section(s) => {
-                    if s.children.is_empty() { 12 } else { 11 }
+                    if s.children.is_empty() {
+                        12
+                    } else {
+                        11
+                    }
                 }
                 PromptNode::Block(_) => 13,
                 PromptNode::Root(_) => 0,
@@ -60,21 +67,27 @@ impl OptimizationPass for PrioritizationOrderingPass {
     }
 
     fn verify(&self, ast: &PromptRoot, _original: &PromptRoot) -> Result<(), VerificationFailure> {
-        let priorities: Vec<u8> = ast.children.iter().map(|c| match c {
-            PromptNode::Instruction(_) => 4,
-            PromptNode::Constraint(c) => match c.severity {
-                ConstraintSeverity::Required => 1,
-                ConstraintSeverity::Preferred => 2,
-                ConstraintSeverity::Suggested => 3,
-            },
-            _ => 10,
-        }).collect();
+        let priorities: Vec<u8> = ast
+            .children
+            .iter()
+            .map(|c| match c {
+                PromptNode::Instruction(_) => 4,
+                PromptNode::Constraint(c) => match c.severity {
+                    ConstraintSeverity::Required => 1,
+                    ConstraintSeverity::Preferred => 2,
+                    ConstraintSeverity::Suggested => 3,
+                },
+                _ => 10,
+            })
+            .collect();
 
         for w in priorities.windows(2) {
             if w[0] > 10 && w[1] < 10 {
                 return Err(VerificationFailure {
                     pass_name: self.name().to_string(),
-                    reason: "Prioritization order violated: higher-priority items after lower-priority".to_string(),
+                    reason:
+                        "Prioritization order violated: higher-priority items after lower-priority"
+                            .to_string(),
                 });
             }
         }

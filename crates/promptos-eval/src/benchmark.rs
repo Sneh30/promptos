@@ -1,4 +1,4 @@
-use log::{info, debug};
+use log::{debug, info};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -58,7 +58,10 @@ impl BenchmarkSuite {
     }
 
     pub fn add_prompt(&mut self, prompt: BenchmarkPrompt) {
-        debug!("Benchmark add_prompt — id={}, category={}", prompt.id, prompt.category);
+        debug!(
+            "Benchmark add_prompt — id={}, category={}",
+            prompt.id, prompt.category
+        );
         self.prompts.push(prompt);
     }
 
@@ -71,14 +74,18 @@ impl BenchmarkSuite {
         let content = std::fs::read_to_string(path)
             .map_err(|e| format!("Cannot read benchmark file: {}", e))?;
 
-        let ext = Path::new(path).extension().and_then(|e| e.to_str()).unwrap_or("");
+        let ext = Path::new(path)
+            .extension()
+            .and_then(|e| e.to_str())
+            .unwrap_or("");
 
         let prompts: Vec<BenchmarkPrompt> = match ext {
-            "json" => serde_json::from_str(&content)
-                .map_err(|e| format!("JSON parse error: {}", e))?,
+            "json" => {
+                serde_json::from_str(&content).map_err(|e| format!("JSON parse error: {}", e))?
+            }
             "toml" => {
-                let single: BenchmarkPrompt = toml::from_str(&content)
-                    .map_err(|e| format!("TOML parse error: {}", e))?;
+                let single: BenchmarkPrompt =
+                    toml::from_str(&content).map_err(|e| format!("TOML parse error: {}", e))?;
                 vec![single]
             }
             _ => return Err(format!("Unsupported file format: {}", ext)),
@@ -102,7 +109,10 @@ impl BenchmarkSuite {
     }
 
     pub fn by_category(&self, category: &str) -> Vec<&BenchmarkPrompt> {
-        self.prompts.iter().filter(|p| p.category == category).collect()
+        self.prompts
+            .iter()
+            .filter(|p| p.category == category)
+            .collect()
     }
 
     pub fn categories(&self) -> Vec<String> {

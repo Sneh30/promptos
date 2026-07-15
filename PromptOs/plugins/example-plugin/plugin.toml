@@ -1,0 +1,10 @@
+[plugin]
+name = "my-optimizer"
+version = "1.0.0"
+author = "PromptOS User"
+description = "Custom optimization pass that adds specialized instruction formatting"
+
+[permissions]
+network = false
+filesystem = false
+api_keys = []

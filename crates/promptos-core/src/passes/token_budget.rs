@@ -15,17 +15,29 @@ impl OptimizationPass for TokenBudgetOptimizationPass {
     }
 
     fn should_run(&self, mode: CompilationMode, _config: &UserConfig) -> bool {
-        matches!(mode, CompilationMode::Economy | CompilationMode::Balanced | CompilationMode::DeepAnalysis | CompilationMode::MissionCritical)
+        matches!(
+            mode,
+            CompilationMode::Economy
+                | CompilationMode::Balanced
+                | CompilationMode::DeepAnalysis
+                | CompilationMode::MissionCritical
+        )
     }
 
     async fn run(&self, ast: &mut PromptRoot, ctx: &PassContext) -> Result<PassResult, PassError> {
-        let context_limit = ctx.model_profile.as_ref().map_or(128000, |p| p.context_limit_input) as usize;
+        let context_limit = ctx
+            .model_profile
+            .as_ref()
+            .map_or(128000, |p| p.context_limit_input) as usize;
         let safety_margin = (context_limit as f64 * 0.1) as usize;
         let effective_limit = context_limit - safety_margin;
 
         let current_text = self.ast_to_text(ast);
         let current_tokens = current_text.split_whitespace().count();
-        info!("Pass [token_budget] — entering, tokens={}, effective_limit={}", current_tokens, effective_limit);
+        info!(
+            "Pass [token_budget] — entering, tokens={}, effective_limit={}",
+            current_tokens, effective_limit
+        );
         let mut tokens_saved = 0isize;
 
         if current_tokens > effective_limit {
@@ -75,25 +87,40 @@ impl OptimizationPass for TokenBudgetOptimizationPass {
 
 impl TokenBudgetOptimizationPass {
     fn ast_to_text(&self, ast: &PromptRoot) -> String {
-        ast.children.iter().map(|c| format!("{:?}", c)).collect::<Vec<_>>().join(" ")
+        ast.children
+            .iter()
+            .map(|c| format!("{:?}", c))
+            .collect::<Vec<_>>()
+            .join(" ")
     }
 
     fn identify_compressible_nodes(&self, ast: &PromptRoot) -> Vec<usize> {
-        let mut scored: Vec<(usize, f32)> = ast.children.iter().enumerate().map(|(i, child)| {
-            let priority = match child {
-                PromptNode::Instruction(_) => 1.0,
-                PromptNode::Constraint(_) => 0.95,
-                PromptNode::RoleSpec(_) => 0.9,
-                PromptNode::FormatSpec(_) => 0.85,
-                PromptNode::Context(ctx) => ctx.relevance_score,
-                PromptNode::Example(_) => 0.6,
-                PromptNode::MetaInstruction(_) => 0.3,
-                PromptNode::Section(s) => if s.children.is_empty() { 0.1 } else { 0.4 },
-                PromptNode::Block(_) => 0.3,
-                PromptNode::Root(_) => 1.0,
-            };
-            (i, priority)
-        }).collect();
+        let mut scored: Vec<(usize, f32)> = ast
+            .children
+            .iter()
+            .enumerate()
+            .map(|(i, child)| {
+                let priority = match child {
+                    PromptNode::Instruction(_) => 1.0,
+                    PromptNode::Constraint(_) => 0.95,
+                    PromptNode::RoleSpec(_) => 0.9,
+                    PromptNode::FormatSpec(_) => 0.85,
+                    PromptNode::Context(ctx) => ctx.relevance_score,
+                    PromptNode::Example(_) => 0.6,
+                    PromptNode::MetaInstruction(_) => 0.3,
+                    PromptNode::Section(s) => {
+                        if s.children.is_empty() {
+                            0.1
+                        } else {
+                            0.4
+                        }
+                    }
+                    PromptNode::Block(_) => 0.3,
+                    PromptNode::Root(_) => 1.0,
+                };
+                (i, priority)
+            })
+            .collect();
 
         scored.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
         scored.iter().map(|(i, _)| *i).collect()
@@ -103,20 +130,18 @@ impl TokenBudgetOptimizationPass {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::semantic::ModelProfileData;
     use crate::ast::Position;
+    use crate::semantic::ModelProfileData;
 
     #[tokio::test]
     async fn test_token_budget_within_limit() {
-        let mut ast = PromptRoot::new(vec![
-            PromptNode::Instruction(Instruction {
-                verb: InstructionVerb::Write,
-                object: "Short".to_string(),
-                modifiers: Vec::new(),
-                confidence: 0.9,
-                span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 5)),
-            }),
-        ]);
+        let mut ast = PromptRoot::new(vec![PromptNode::Instruction(Instruction {
+            verb: InstructionVerb::Write,
+            object: "Short".to_string(),
+            modifiers: Vec::new(),
+            confidence: 0.9,
+            span: crate::ast::SourceSpan::new(Position::new(1, 1), Position::new(1, 5)),
+        })]);
         ast.annotations.token_count_original = 5;
         let pass = TokenBudgetOptimizationPass;
         let profile = ModelProfileData {

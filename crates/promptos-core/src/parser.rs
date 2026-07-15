@@ -2,11 +2,36 @@ use crate::ast::*;
 use crate::lexer::{tokenize, Token, TokenKind};
 
 const INSTRUCTION_VERBS: &[&str] = &[
-    "write", "generate", "create", "analyze", "explain", "summarize",
-    "extract", "classify", "compare", "translate", "rewrite", "expand",
-    "list", "describe", "define", "calculate", "implement", "design",
-    "optimize", "debug", "convert", "format", "search", "find",
-    "evaluate", "assess", "review", "identify", "outline", "propose",
+    "write",
+    "generate",
+    "create",
+    "analyze",
+    "explain",
+    "summarize",
+    "extract",
+    "classify",
+    "compare",
+    "translate",
+    "rewrite",
+    "expand",
+    "list",
+    "describe",
+    "define",
+    "calculate",
+    "implement",
+    "design",
+    "optimize",
+    "debug",
+    "convert",
+    "format",
+    "search",
+    "find",
+    "evaluate",
+    "assess",
+    "review",
+    "identify",
+    "outline",
+    "propose",
 ];
 
 pub struct Parser {
@@ -143,19 +168,14 @@ impl Parser {
                 confidence: 0.8,
                 span: block.span,
             })
-        } else if lower.contains("must")
-            || lower.contains("should")
-            || lower.contains("cannot")
-        {
+        } else if lower.contains("must") || lower.contains("should") || lower.contains("cannot") {
             PromptNode::Constraint(Constraint {
                 constraint_type: ConstraintType::Positive,
                 value: block.content.clone(),
                 severity: ConstraintSeverity::Required,
                 span: block.span,
             })
-        } else if lower.contains("format")
-            || lower.contains("output as")
-        {
+        } else if lower.contains("format") || lower.contains("output as") {
             PromptNode::FormatSpec(FormatSpec {
                 format_type: block.content.clone(),
                 detail: block.content.clone(),
@@ -247,10 +267,7 @@ impl Parser {
             });
         }
 
-        if lower.contains("example")
-            || lower.contains("for instance")
-            || lower.contains("e.g.")
-        {
+        if lower.contains("example") || lower.contains("for instance") || lower.contains("e.g.") {
             if text.contains("->") || text.contains("=>") {
                 let parts: Vec<&str> = if text.contains("->") {
                     text.splitn(2, "->").collect()

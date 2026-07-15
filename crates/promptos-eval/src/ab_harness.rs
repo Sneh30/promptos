@@ -89,8 +89,14 @@ impl ABHarness {
         compiled_response: &str,
         rubric: Option<&str>,
     ) -> ABTestResult {
-        let raw_score = self.evaluator.evaluate(raw_prompt, raw_response, rubric).await;
-        let compiled_score = self.evaluator.evaluate(compiled_prompt, compiled_response, rubric).await;
+        let raw_score = self
+            .evaluator
+            .evaluate(raw_prompt, raw_response, rubric)
+            .await;
+        let compiled_score = self
+            .evaluator
+            .evaluate(compiled_prompt, compiled_response, rubric)
+            .await;
 
         let improvement_pct = if raw_score > 0.0 {
             ((compiled_score - raw_score) / raw_score) * 100.0
@@ -121,7 +127,12 @@ impl ABHarness {
         }
     }
 
-    pub fn to_benchmark_result(&self, result: &ABTestResult, prompt_id: &str, category: &str) -> BenchmarkResult {
+    pub fn to_benchmark_result(
+        &self,
+        result: &ABTestResult,
+        prompt_id: &str,
+        category: &str,
+    ) -> BenchmarkResult {
         BenchmarkResult {
             prompt_id: prompt_id.to_string(),
             category: category.to_string(),
@@ -142,13 +153,15 @@ mod tests {
     #[tokio::test]
     async fn test_ab_harness() {
         let harness = ABHarness::with_heuristic();
-        let result = harness.run_ab_test(
-            "Write code",
-            "Write efficient Python code",
-            "def foo(): pass",
-            "def optimized_function(): return 42",
-            None,
-        ).await;
+        let result = harness
+            .run_ab_test(
+                "Write code",
+                "Write efficient Python code",
+                "def foo(): pass",
+                "def optimized_function(): return 42",
+                None,
+            )
+            .await;
 
         // Compiled prompt is better, so compiled score should be >= raw score
         assert!(result.compiled_score >= 0.0);

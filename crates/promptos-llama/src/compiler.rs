@@ -1,7 +1,7 @@
 use crate::bridge::InferenceConfig;
 use crate::inference::{build_chatml_prompt, truncate_to_tokens};
 use crate::model::ModelManager;
-use log::{info, debug};
+use log::{debug, info};
 use serde::{Deserialize, Serialize};
 
 const COMPILER_SYSTEM_PROMPT: &str = r#"You are a prompt optimization engine. Rewrite the user's prompt to be maximally concise while preserving ALL intent, meaning, and constraints.
@@ -80,11 +80,18 @@ impl LlamaCompiler {
 
     pub fn compile(&self, input: &str) -> Result<CompilationResult, String> {
         let original_tokens = count_tokens(input);
-        info!("LLM compile — input_tokens={}, input_len={}", original_tokens, input.len());
+        info!(
+            "LLM compile — input_tokens={}, input_len={}",
+            original_tokens,
+            input.len()
+        );
 
         let prompt = build_chatml_prompt(Some(COMPILER_SYSTEM_PROMPT), input);
         let truncated_prompt = truncate_to_tokens(&prompt, 3072);
-        debug!("LLM compile — prompt built, truncated_len={}", truncated_prompt.len());
+        debug!(
+            "LLM compile — prompt built, truncated_len={}",
+            truncated_prompt.len()
+        );
 
         let output = self.manager.infer(&truncated_prompt, &self.config)?;
 
@@ -169,7 +176,14 @@ fn build_pass_list(original: &str, optimized: &str) -> Vec<String> {
         passes.push("token-reduction".to_string());
     }
 
-    let weak = ["could you", "maybe", "i'd like", "if possible", "would you mind", "please"];
+    let weak = [
+        "could you",
+        "maybe",
+        "i'd like",
+        "if possible",
+        "would you mind",
+        "please",
+    ];
     if weak.iter().any(|w| orig_lower.contains(w)) {
         passes.push("instruction-strengthening".to_string());
     }
@@ -191,11 +205,31 @@ fn parse_evaluation_json(text: &str) -> EvaluationReport {
             let json_str = &text[start..=end];
             if let Ok(val) = serde_json::from_str::<serde_json::Value>(json_str) {
                 return EvaluationReport {
-                    intent_preserved: val.get("intent_preserved").or(val.get("1")).and_then(|v| v.as_bool()).unwrap_or(true),
-                    token_reduction_achieved: val.get("token_reduction").or(val.get("2")).and_then(|v| v.as_bool()).unwrap_or(false),
-                    instructions_strengthened: val.get("instructions_strengthened").or(val.get("3")).and_then(|v| v.as_bool()).unwrap_or(false),
-                    constraints_maintained: val.get("constraints_maintained").or(val.get("4")).and_then(|v| v.as_bool()).unwrap_or(true),
-                    quality_score: val.get("quality_score").and_then(|v| v.as_f64()).map(|v| v as f32).unwrap_or(7.0),
+                    intent_preserved: val
+                        .get("intent_preserved")
+                        .or(val.get("1"))
+                        .and_then(|v| v.as_bool())
+                        .unwrap_or(true),
+                    token_reduction_achieved: val
+                        .get("token_reduction")
+                        .or(val.get("2"))
+                        .and_then(|v| v.as_bool())
+                        .unwrap_or(false),
+                    instructions_strengthened: val
+                        .get("instructions_strengthened")
+                        .or(val.get("3"))
+                        .and_then(|v| v.as_bool())
+                        .unwrap_or(false),
+                    constraints_maintained: val
+                        .get("constraints_maintained")
+                        .or(val.get("4"))
+                        .and_then(|v| v.as_bool())
+                        .unwrap_or(true),
+                    quality_score: val
+                        .get("quality_score")
+                        .and_then(|v| v.as_f64())
+                        .map(|v| v as f32)
+                        .unwrap_or(7.0),
                 };
             }
         }
@@ -203,10 +237,18 @@ fn parse_evaluation_json(text: &str) -> EvaluationReport {
 
     let has_yes = |keyword: &str| text.to_lowercase().contains(keyword);
     EvaluationReport {
-        intent_preserved: has_yes("intent_preserved") || has_yes("\"1\": true") || has_yes("\"1\": \"yes"),
-        token_reduction_achieved: has_yes("token_reduction") || has_yes("\"2\": true") || has_yes("\"2\": \"yes"),
-        instructions_strengthened: has_yes("instructions_strengthened") || has_yes("\"3\": true") || has_yes("\"3\": \"yes"),
-        constraints_maintained: has_yes("constraints_maintained") || has_yes("\"4\": true") || has_yes("\"4\": \"yes"),
+        intent_preserved: has_yes("intent_preserved")
+            || has_yes("\"1\": true")
+            || has_yes("\"1\": \"yes"),
+        token_reduction_achieved: has_yes("token_reduction")
+            || has_yes("\"2\": true")
+            || has_yes("\"2\": \"yes"),
+        instructions_strengthened: has_yes("instructions_strengthened")
+            || has_yes("\"3\": true")
+            || has_yes("\"3\": \"yes"),
+        constraints_maintained: has_yes("constraints_maintained")
+            || has_yes("\"4\": true")
+            || has_yes("\"4\": \"yes"),
         quality_score: 7.5,
     }
 }

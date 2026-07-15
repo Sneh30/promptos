@@ -79,7 +79,11 @@ pub extern "C" fn promptos_llm_compile(
                     if len > max {
                         let truncated = &bytes[..max - 1];
                         unsafe {
-                            std::ptr::copy_nonoverlapping(truncated.as_ptr(), output as *mut u8, truncated.len());
+                            std::ptr::copy_nonoverlapping(
+                                truncated.as_ptr(),
+                                output as *mut u8,
+                                truncated.len(),
+                            );
                             *output.add(truncated.len()) = 0;
                         }
                         0

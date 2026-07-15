@@ -40,7 +40,11 @@ impl ModelProvider for AnthropicProvider {
         ]
     }
 
-    async fn send_prompt(&self, prompt: &CompiledPrompt, key: &ApiKey) -> Result<ModelResponse, ProviderError> {
+    async fn send_prompt(
+        &self,
+        prompt: &CompiledPrompt,
+        key: &ApiKey,
+    ) -> Result<ModelResponse, ProviderError> {
         let model = self.model_name(&prompt.model_id);
         let client = reqwest::Client::new();
 
@@ -71,7 +75,10 @@ impl ModelProvider for AnthropicProvider {
             return match status.as_u16() {
                 401 => Err(ProviderError::Authentication(text)),
                 429 => Err(ProviderError::RateLimited { retry_after: None }),
-                _ => Err(ProviderError::InvalidRequest(format!("Status {}: {}", status, text))),
+                _ => Err(ProviderError::InvalidRequest(format!(
+                    "Status {}: {}",
+                    status, text
+                ))),
             };
         }
 
