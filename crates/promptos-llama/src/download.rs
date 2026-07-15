@@ -1,3 +1,4 @@
+use log::{info, warn};
 use std::path::{Path, PathBuf};
 
 const DEFAULT_MODEL_URL: &str = "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf";
@@ -30,7 +31,7 @@ impl ModelDownloader {
     pub fn download_default_model(&self) -> Result<String, String> {
         let dest = self.default_model_path();
         if dest.exists() {
-            tracing::info!("Model already exists at {}", dest.display());
+            info!("Download — default model already exists at {}", dest.display());
             return Ok(dest.to_string_lossy().to_string());
         }
 
@@ -38,7 +39,7 @@ impl ModelDownloader {
     }
 
     pub fn download_model(&self, url: &str, dest: &Path) -> Result<String, String> {
-        tracing::info!("Downloading model from {} to {}", url, dest.display());
+        info!("Download — url={}, dest={}, content_length=unknown", url, dest.display());
         println!("Downloading model (this may take a while)...");
 
         let response = reqwest::blocking::get(url)
@@ -53,7 +54,7 @@ impl ModelDownloader {
             .map_err(|e| format!("Write error: {}", e))?;
         let downloaded = bytes.len() as u64;
 
-        tracing::info!("Downloaded {} / {} bytes", downloaded, total);
+        info!("Download — bytes_received={}, total={}, path={}", downloaded, total, dest.display());
         println!("Download complete: {}", format_size(downloaded));
 
         Ok(dest.to_string_lossy().to_string())

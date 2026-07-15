@@ -1,5 +1,6 @@
 use super::*;
 use async_trait::async_trait;
+use log::info;
 
 pub struct PersonaReinforcementPass;
 
@@ -18,6 +19,7 @@ impl OptimizationPass for PersonaReinforcementPass {
     }
 
     async fn run(&self, ast: &mut PromptRoot, ctx: &PassContext) -> Result<PassResult, PassError> {
+        info!("Pass [persona] — entering, target_model={}", ctx.target_model);
         let mut persona_count = 0;
 
         for child in &ast.children {
@@ -36,6 +38,7 @@ impl OptimizationPass for PersonaReinforcementPass {
             }
         }
 
+        info!("Pass [persona] — exit, reinforced={}", persona_count);
         Ok(PassResult {
             pass_name: self.name().to_string(),
             tokens_saved: 0,

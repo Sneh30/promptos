@@ -1,5 +1,6 @@
 use super::*;
 use async_trait::async_trait;
+use log::info;
 
 pub struct TokenBudgetOptimizationPass;
 
@@ -24,6 +25,7 @@ impl OptimizationPass for TokenBudgetOptimizationPass {
 
         let current_text = self.ast_to_text(ast);
         let current_tokens = current_text.split_whitespace().count();
+        info!("Pass [token_budget] — entering, tokens={}, effective_limit={}", current_tokens, effective_limit);
         let mut tokens_saved = 0isize;
 
         if current_tokens > effective_limit {
@@ -51,6 +53,7 @@ impl OptimizationPass for TokenBudgetOptimizationPass {
             }
         }
 
+        info!("Pass [token_budget] — exit, tokens_saved={}", tokens_saved);
         Ok(PassResult {
             pass_name: self.name().to_string(),
             tokens_saved,

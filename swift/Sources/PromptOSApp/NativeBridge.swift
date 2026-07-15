@@ -1,13 +1,16 @@
 import Foundation
 import Darwin
+import OSLog
 
 class NativeBridge {
+    private let logger = Logger(subsystem: "com.promptos.app", category: "NativeBridge")
     private let handle: UnsafeMutableRawPointer?
 
     init?() {
         let bundle = Bundle.main
         var dylibPath = bundle.bundleURL
             .appendingPathComponent("Contents/Frameworks/libpromptos_llama.dylib").path
+        logger.info("NativeBridge init — looking for dylib")
         if !FileManager.default.fileExists(atPath: dylibPath) {
             dylibPath = bundle.path(forResource: "libpromptos_llama", ofType: "dylib")
                 ?? bundle.bundleURL
@@ -15,19 +18,19 @@ class NativeBridge {
         }
 
         guard FileManager.default.fileExists(atPath: dylibPath) else {
-            print("[NativeBridge] dylib not found at \(dylibPath), running in fallback mode")
+            logger.warning("NativeBridge — dylib not found at \(dylibPath, privacy: .public), fallback mode")
             self.handle = nil
             return nil
         }
 
         guard let h = dlopen(dylibPath, RTLD_NOW) else {
             let err = String(cString: dlerror())
-            print("[NativeBridge] dlopen failed: \(err)")
+            logger.error("NativeBridge — dlopen failed: \(err, privacy: .public)")
             self.handle = nil
             return nil
         }
         self.handle = h
-        print("[NativeBridge] Loaded dylib successfully")
+        logger.info("NativeBridge — dylib loaded successfully from \(dylibPath, privacy: .public)")
     }
 
     deinit {
@@ -62,12 +65,17 @@ class NativeBridge {
     }
 
     var isModelLoaded: Bool {
-        guard let h = handle else { return false }
+        guard let h = handle else {
+            logger.debug("NativeBridge — model not loaded (handle is nil)")
+            return false
+        }
 
         let sym = dlsym(h, "promptos_llm_is_loaded")
         let fn = unsafeBitCast(sym, to: IsLoadedFunc.self)
 
-        return fn() == 1
+        let loaded = fn() == 1
+        logger.debug("NativeBridge — model loaded: \(loaded, privacy: .public)")
+        return loaded
     }
 
     func compile(_ input: String) -> String? {

@@ -1,5 +1,6 @@
 use super::*;
 use async_trait::async_trait;
+use log::info;
 
 pub struct ContextWindowOptimizationPass;
 
@@ -20,6 +21,7 @@ impl OptimizationPass for ContextWindowOptimizationPass {
     async fn run(&self, ast: &mut PromptRoot, ctx: &PassContext) -> Result<PassResult, PassError> {
         let context_limit = ctx.model_profile.as_ref().map_or(128000, |p| p.context_limit_input) as usize;
         let current_tokens = ast.annotations.token_count_original;
+        info!("Pass [context_optimizer] — entering, tokens={}, context_limit={}", current_tokens, context_limit);
         let mut tokens_saved = 0isize;
 
         if current_tokens > context_limit / 2 {
@@ -42,6 +44,7 @@ impl OptimizationPass for ContextWindowOptimizationPass {
             }
         }
 
+        info!("Pass [context_optimizer] — exit, tokens_saved={}, children_after={}", tokens_saved, ast.children.len());
         Ok(PassResult {
             pass_name: self.name().to_string(),
             tokens_saved,

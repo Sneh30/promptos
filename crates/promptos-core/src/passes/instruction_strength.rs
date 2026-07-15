@@ -1,5 +1,6 @@
 use super::*;
 use async_trait::async_trait;
+use log::info;
 
 pub struct InstructionStrengtheningPass;
 
@@ -35,6 +36,7 @@ impl OptimizationPass for InstructionStrengtheningPass {
     }
 
     async fn run(&self, ast: &mut PromptRoot, _ctx: &PassContext) -> Result<PassResult, PassError> {
+        info!("Pass [instruction_strength] — entering, children={}", ast.children.len());
         let mut strengthened = 0;
         let mut tokens_saved = 0isize;
 
@@ -67,6 +69,7 @@ impl OptimizationPass for InstructionStrengtheningPass {
             }
         }
 
+        info!("Pass [instruction_strength] — exit, strengthened={}, tokens_saved={}", strengthened, tokens_saved);
         Ok(PassResult {
             pass_name: self.name().to_string(),
             tokens_saved,

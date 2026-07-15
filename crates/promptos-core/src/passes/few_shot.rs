@@ -1,5 +1,6 @@
 use super::*;
 use async_trait::async_trait;
+use log::info;
 use std::collections::HashSet;
 
 pub struct FewShotOptimizationPass;
@@ -27,6 +28,7 @@ impl OptimizationPass for FewShotOptimizationPass {
     }
 
     async fn run(&self, ast: &mut PromptRoot, _ctx: &PassContext) -> Result<PassResult, PassError> {
+        info!("Pass [few_shot] — entering, children={}", ast.children.len());
         let mut optimized = 0;
         let mut tokens_saved = 0isize;
         let mut examples: Vec<(usize, Example)> = Vec::new();
@@ -38,6 +40,7 @@ impl OptimizationPass for FewShotOptimizationPass {
         }
 
         if examples.len() < 2 {
+            info!("Pass [few_shot] — exit, not enough examples ({})", examples.len());
             return Ok(PassResult {
                 pass_name: self.name().to_string(),
                 tokens_saved: 0,
@@ -70,6 +73,7 @@ impl OptimizationPass for FewShotOptimizationPass {
             optimized += 1;
         }
 
+        info!("Pass [few_shot] — exit, optimized={}, tokens_saved={}", optimized, tokens_saved);
         Ok(PassResult {
             pass_name: self.name().to_string(),
             tokens_saved,

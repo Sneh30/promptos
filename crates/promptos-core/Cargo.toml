@@ -19,3 +19,5 @@ async-trait.workspace = true
 similar.workspace = true
 regex.workspace = true
 chrono.workspace = true
+log.workspace = true
+env_logger.workspace = true

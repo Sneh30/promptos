@@ -1,4 +1,5 @@
 use crate::traits::*;
+use log::{info, debug, warn};
 use std::collections::HashMap;
 
 pub struct ProviderRegistry {
@@ -14,10 +15,12 @@ impl ProviderRegistry {
 
     pub fn register(&mut self, provider: Box<dyn ModelProvider>) {
         let id = provider.id();
+        info!("Provider register — id={:?}, name={}", id, provider.name());
         self.providers.insert(id, provider);
     }
 
     pub fn register_defaults(&mut self) {
+        info!("Provider register_defaults — registering Anthropic, OpenAI, Google");
         self.register(Box::new(crate::AnthropicProvider::new()));
         self.register(Box::new(crate::OpenAIProvider::new()));
         self.register(Box::new(crate::GoogleProvider::new()));
@@ -38,12 +41,15 @@ impl ProviderRegistry {
     pub fn resolve_provider(&self, model_id: &str) -> Option<(ProviderId, &Box<dyn ModelProvider>)> {
         for (id, provider) in &self.providers {
             if provider.supported_models().iter().any(|m| m == model_id) {
+                debug!("Provider resolve — model={}, provider={:?}", model_id, id);
                 return Some((*id, provider));
             }
             if model_id.contains(id.as_str()) {
+                debug!("Provider resolve — model={} (contains), provider={:?}", model_id, id);
                 return Some((*id, provider));
             }
         }
+        warn!("Provider resolve — no provider found for model: {}", model_id);
         None
     }
 
@@ -57,12 +63,23 @@ impl ProviderRegistry {
             .resolve_provider(model_id)
             .ok_or_else(|| ProviderError::ModelUnavailable(format!("No provider for model: {}", model_id)))?;
 
-        provider.send_prompt(prompt, key).await
+        info!("Provider send_prompt — model={}, prompt_len={}, provider={:?}", model_id, prompt.text.len(), _id);
+        let result = provider.send_prompt(prompt, key).await;
+        match &result {
+            Ok(resp) => info!("Provider response — model={}, output_len={}, latency_ms={}, finish_reason={}",
+                model_id, resp.output_tokens, resp.latency_ms, resp.finish_reason),
+            Err(e) => warn!("Provider error — model={}, error={:?}", model_id, e),
+        }
+        result
     }
 
     pub fn estimate_cost(&self, model_id: &str, prompt: &CompiledPrompt) -> Option<CostEstimate> {
-        self.resolve_provider(model_id)
-            .map(|(_, provider)| provider.estimate_cost(prompt))
+        let cost = self.resolve_provider(model_id)
+            .map(|(_, provider)| provider.estimate_cost(prompt));
+        if let Some(ref c) = cost {
+            debug!("Provider estimate_cost — model={}, total_cost={} {}", model_id, c.total_cost, c.currency);
+        }
+        cost
     }
 }
 

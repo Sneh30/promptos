@@ -21,3 +21,5 @@ toml.workspace = true
 promptos-core = { path = "../promptos-core" }
 promptos-provider = { path = "../promptos-provider" }
 promptos-profiles = { path = "../promptos-profiles" }
+log.workspace = true
+env_logger.workspace = true

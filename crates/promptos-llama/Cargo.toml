@@ -19,3 +19,5 @@ regex.workspace = true
 sha2.workspace = true
 reqwest = { workspace = true, features = ["blocking"] }
 once_cell = "1"
+log.workspace = true
+env_logger.workspace = true

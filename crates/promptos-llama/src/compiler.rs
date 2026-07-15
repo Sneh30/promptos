@@ -1,6 +1,7 @@
 use crate::bridge::InferenceConfig;
 use crate::inference::{build_chatml_prompt, truncate_to_tokens};
 use crate::model::ModelManager;
+use log::{info, debug};
 use serde::{Deserialize, Serialize};
 
 const COMPILER_SYSTEM_PROMPT: &str = r#"You are a prompt optimization engine. Rewrite the user's prompt to be maximally concise while preserving ALL intent, meaning, and constraints.
@@ -79,14 +80,18 @@ impl LlamaCompiler {
 
     pub fn compile(&self, input: &str) -> Result<CompilationResult, String> {
         let original_tokens = count_tokens(input);
+        info!("LLM compile — input_tokens={}, input_len={}", original_tokens, input.len());
 
         let prompt = build_chatml_prompt(Some(COMPILER_SYSTEM_PROMPT), input);
         let truncated_prompt = truncate_to_tokens(&prompt, 3072);
+        debug!("LLM compile — prompt built, truncated_len={}", truncated_prompt.len());
 
         let output = self.manager.infer(&truncated_prompt, &self.config)?;
 
         let optimized = trim_llm_output(&output.text);
         let optimized_tokens = count_tokens(&optimized);
+
+        info!("LLM compile — response received, output_tokens={}, input_tokens={}, inference_time_ms={}", optimized_tokens, original_tokens, output.inference_time_ms);
 
         let reduction = if original_tokens > 0 {
             ((original_tokens as f64 - optimized_tokens as f64) / original_tokens as f64) * 100.0

@@ -1,4 +1,5 @@
 use crate::benchmark::{BenchmarkSuiteResult, CategorySummary, BenchmarkResult};
+use log::{info, warn};
 
 #[derive(Debug, Clone)]
 pub struct RegressionReport {
@@ -22,6 +23,7 @@ pub struct RegressionChecker;
 
 impl RegressionChecker {
     pub fn compare(baseline: &BenchmarkSuiteResult, current: &BenchmarkSuiteResult) -> RegressionReport {
+        info!("Regression check — baseline={}, current={}", baseline.suite_name, current.suite_name);
         let mut category_regressions = Vec::new();
         let mut total_regressions = 0usize;
 
@@ -47,6 +49,11 @@ impl RegressionChecker {
             }
         }
 
+        if total_regressions > 0 {
+            warn!("Regression detected — {} categories regressed", total_regressions);
+        } else {
+            info!("Regression check — passed, no regressions detected");
+        }
         RegressionReport {
             baseline_name: baseline.suite_name.clone(),
             current_name: current.suite_name.clone(),

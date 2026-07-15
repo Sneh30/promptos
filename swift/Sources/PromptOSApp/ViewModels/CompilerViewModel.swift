@@ -1,7 +1,9 @@
 import SwiftUI
 import Combine
+import OSLog
 
 class CompilerViewModel: ObservableObject {
+    private let logger = Logger(subsystem: "com.promptos.app", category: "CompilerViewModel")
     @Published var inputText: String = ""
     @Published var compiledText: String = ""
     @Published var selectedModel: String = "claude-3.5-sonnet"
@@ -76,6 +78,7 @@ class CompilerViewModel: ObservableObject {
     }
 
     func compile() {
+        logger.info("Compile start — mode=\(self.selectedMode, privacy: .public), model=\(self.selectedModel, privacy: .public), input_len=\(self.inputText.count, privacy: .public)")
         guard !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             diagnostics = [
                 DiagnosticItem(severity: "warning", message: "No prompt to compile",
@@ -105,6 +108,8 @@ class CompilerViewModel: ObservableObject {
 
             let elapsed = (CFAbsoluteTimeGetCurrent() - startTime) * 1000
             let compiledTokens = result.text.split(separator: " ").count
+
+            self.logger.info("Compile complete — elapsed_ms=\(elapsed, privacy: .public), original_tokens=\(originalTokens, privacy: .public), compiled_tokens=\(compiledTokens, privacy: .public), passes=\(result.passesApplied.count, privacy: .public)")
 
             let tokenReduction = originalTokens > 0 ? Double(originalTokens - compiledTokens) / Double(originalTokens) * 100.0 : 0.0
             let cost = Double(compiledTokens) * 3.0 / 1_000_000.0

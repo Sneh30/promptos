@@ -1,5 +1,6 @@
 use super::*;
 use async_trait::async_trait;
+use log::info;
 
 pub struct FormatNormalizationPass;
 
@@ -28,6 +29,7 @@ impl OptimizationPass for FormatNormalizationPass {
     }
 
     async fn run(&self, ast: &mut PromptRoot, ctx: &PassContext) -> Result<PassResult, PassError> {
+        info!("Pass [format_normalizer] — entering, target_model={}", ctx.target_model);
         let mut normalized = 0;
         let preferred_format = self.get_preferred_format(&ctx.target_model);
 
@@ -44,6 +46,7 @@ impl OptimizationPass for FormatNormalizationPass {
             }
         }
 
+        info!("Pass [format_normalizer] — exit, normalized={}, preferred={}", normalized, preferred_format);
         Ok(PassResult {
             pass_name: self.name().to_string(),
             tokens_saved: 0,

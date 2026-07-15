@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 
 struct LlamaCompilationResult {
     let text: String
@@ -9,6 +10,7 @@ struct LlamaCompilationResult {
 }
 
 class LlamaService {
+    private let logger = Logger(subsystem: "com.promptos.app", category: "LlamaService")
     private let bridge: NativeBridge?
     private let modelsDir: String
     private let llamaCompletionPath: String
@@ -16,6 +18,7 @@ class LlamaService {
     private let modelFilename = "qwen2.5-0.5b-instruct-q4_k_m.gguf"
 
     init() {
+        logger.info("LlamaService initializing")
         self.bridge = NativeBridge()
 
         let home = FileManager.default.homeDirectoryForCurrentUser.path
@@ -53,12 +56,15 @@ class LlamaService {
 
     func compile(_ input: String, mode: String = "balanced") -> LlamaCompilationResult? {
         let originalTokens = input.split(separator: " ").count
+        logger.info("Compile — mode=\(mode, privacy: .public), original_tokens=\(originalTokens, privacy: .public), input_len=\(input.count, privacy: .public)")
 
         if let b = bridge, b.isModelLoaded {
+            logger.debug("Compile — using native bridge")
             let start = CFAbsoluteTimeGetCurrent()
             if let result = b.compile(input) {
                 let elapsed = UInt64((CFAbsoluteTimeGetCurrent() - start) * 1000)
                 let compiledTokens = result.split(separator: " ").count
+                logger.info("Compile — bridge result, compiled_tokens=\(compiledTokens, privacy: .public), elapsed_ms=\(elapsed, privacy: .public)")
                 let passes = buildPasses(mode, originalTokens, compiledTokens)
                 return LlamaCompilationResult(
                     text: result,
@@ -70,12 +76,20 @@ class LlamaService {
             }
         }
 
+        logger.warning("Compile — bridge unavailable, falling back to subprocess")
         return runCompletion(input, mode: mode, originalTokens: originalTokens)
     }
 
     private func runCompletion(_ input: String, mode: String, originalTokens: Int) -> LlamaCompilationResult? {
-        guard FileManager.default.fileExists(atPath: bundledModelPath) else { return nil }
-        guard FileManager.default.fileExists(atPath: llamaCompletionPath) else { return nil }
+        guard FileManager.default.fileExists(atPath: bundledModelPath) else {
+            logger.error("Completion — model not found at \(self.bundledModelPath, privacy: .public)")
+            return nil
+        }
+        guard FileManager.default.fileExists(atPath: llamaCompletionPath) else {
+            logger.error("Completion — llama-completion binary not found at \(self.llamaCompletionPath, privacy: .public)")
+            return nil
+        }
+        logger.debug("Completion — starting subprocess with mode=\(mode, privacy: .public)")
 
         let systemPrompt = modePrompt(mode)
         let maxTokens = mode == "economy" ? 512 : 1024

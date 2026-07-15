@@ -1,5 +1,6 @@
 use super::*;
 use async_trait::async_trait;
+use log::info;
 
 pub struct CotScaffoldingPass;
 
@@ -25,6 +26,7 @@ impl OptimizationPass for CotScaffoldingPass {
     }
 
     async fn run(&self, ast: &mut PromptRoot, ctx: &PassContext) -> Result<PassResult, PassError> {
+        info!("Pass [cot_scaffolding] — entering, target_model={}", ctx.target_model);
         let needs_cot = ast.annotations.intent.as_ref().map_or(false, |i| {
             matches!(i.complexity, Complexity::Complex | Complexity::VeryComplex)
         });
@@ -45,6 +47,7 @@ impl OptimizationPass for CotScaffoldingPass {
             let mut all = new_children;
             all.append(&mut ast.children);
             ast.children = all;
+            info!("Pass [cot_scaffolding] — exit, applied=true, complexity=complex");
 
             Ok(PassResult {
                 pass_name: self.name().to_string(),
@@ -53,6 +56,7 @@ impl OptimizationPass for CotScaffoldingPass {
                 description: format!("Injected CoT scaffolding (model: {}, complexity requires reasoning)", ctx.target_model),
             })
         } else {
+            info!("Pass [cot_scaffolding] — exit, applied=false, needs_cot={}", needs_cot);
             Ok(PassResult {
                 pass_name: self.name().to_string(),
                 tokens_saved: 0,
@@ -72,6 +76,7 @@ impl OptimizationPass for CotScaffoldingPass {
 }
 
 impl CotScaffoldingPass {
+
     fn model_supports_cot(&self, model_id: &str) -> bool {
         model_id.contains("claude") || model_id.contains("gpt") || model_id.contains("gemini")
     }

@@ -1,4 +1,5 @@
 use crate::bridge::{InferenceConfig, InferenceOutput};
+use log::{info, warn, debug};
 use regex::Regex;
 use std::time::Instant;
 
@@ -41,7 +42,10 @@ pub fn run_inference(
     let start = Instant::now();
     let input_tokens = prompt.split_whitespace().count() as u32;
 
+    info!("Inference — model_path={}, input_tokens={}", model_path, input_tokens);
+
     if !std::path::Path::new(model_path).exists() {
+        warn!("Inference — model not found at path: {}", model_path);
         return Err(format!("Model not found: {}", model_path));
     }
 
@@ -75,6 +79,7 @@ pub fn run_inference(
     let text = extract_completion_output(&raw);
     let elapsed = start.elapsed().as_millis() as u64;
     let out_tokens = text.split_whitespace().count() as u32;
+    info!("Inference — complete, output_tokens={}, inference_time_ms={}", out_tokens, elapsed);
 
     Ok(InferenceOutput {
         text,

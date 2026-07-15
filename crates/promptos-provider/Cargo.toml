@@ -16,3 +16,5 @@ tracing.workspace = true
 anyhow.workspace = true
 thiserror.workspace = true
 async-trait.workspace = true
+log.workspace = true
+env_logger.workspace = true

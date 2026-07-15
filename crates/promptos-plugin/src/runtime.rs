@@ -1,4 +1,5 @@
 use crate::manifest::{PluginInfo, PluginManifest};
+use log::{info, warn};
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Mutex;
@@ -23,7 +24,9 @@ impl PluginHost {
     }
 
     pub fn load_plugin(&self, path: &str) -> Result<String, String> {
+        info!("Plugin load — path={}", path);
         if !Path::new(path).exists() {
+            warn!("Plugin load — file not found: {}", path);
             return Err(format!("Plugin file not found: {}", path));
         }
 
@@ -54,32 +57,37 @@ impl PluginHost {
             enabled: true,
         });
 
-        tracing::info!("Loaded plugin: {} ({} bytes)", name, wasm_len);
+        info!("Plugin loaded — name={}, bytes={}", name, wasm_len);
         Ok(name)
     }
 
     pub fn unload_plugin(&self, name: &str) -> Result<(), String> {
+        info!("Plugin unload — name={}", name);
         let mut plugins = self.plugins.lock().map_err(|e| e.to_string())?;
         plugins.remove(name);
         Ok(())
     }
 
     pub fn enable_plugin(&self, name: &str) -> Result<(), String> {
+        info!("Plugin enable — name={}", name);
         let mut plugins = self.plugins.lock().map_err(|e| e.to_string())?;
         if let Some(plugin) = plugins.get_mut(name) {
             plugin.enabled = true;
             Ok(())
         } else {
+            warn!("Plugin enable — not found: {}", name);
             Err(format!("Plugin not found: {}", name))
         }
     }
 
     pub fn disable_plugin(&self, name: &str) -> Result<(), String> {
+        info!("Plugin disable — name={}", name);
         let mut plugins = self.plugins.lock().map_err(|e| e.to_string())?;
         if let Some(plugin) = plugins.get_mut(name) {
             plugin.enabled = false;
             Ok(())
         } else {
+            warn!("Plugin disable — not found: {}", name);
             Err(format!("Plugin not found: {}", name))
         }
     }
@@ -99,7 +107,7 @@ impl PluginHost {
     pub fn call_hook(&self, _name: &str, _hook: &str, _payload: &[u8]) -> Result<Vec<u8>, String> {
         // WASM execution would go here with wasmtime
         // For now, return empty result as placeholder
-        tracing::info!("Plugin hook call (WASM execution not yet implemented)");
+        info!("Plugin hook call — name={}, hook={} (WASM execution not yet implemented)", _name, _hook);
         Ok(Vec::new())
     }
 }

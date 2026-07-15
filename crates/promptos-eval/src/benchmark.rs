@@ -1,3 +1,4 @@
+use log::{info, debug};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -57,10 +58,12 @@ impl BenchmarkSuite {
     }
 
     pub fn add_prompt(&mut self, prompt: BenchmarkPrompt) {
+        debug!("Benchmark add_prompt — id={}, category={}", prompt.id, prompt.category);
         self.prompts.push(prompt);
     }
 
     pub fn load_from_file(&mut self, path: &str) -> Result<usize, String> {
+        info!("Benchmark load_from_file — path={}", path);
         if !Path::new(path).exists() {
             return Err(format!("Benchmark file not found: {}", path));
         }

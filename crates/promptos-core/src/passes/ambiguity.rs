@@ -1,5 +1,6 @@
 use super::*;
 use async_trait::async_trait;
+use log::info;
 
 pub struct AmbiguityResolutionPass;
 
@@ -18,8 +19,9 @@ impl OptimizationPass for AmbiguityResolutionPass {
     }
 
     async fn run(&self, ast: &mut PromptRoot, _ctx: &PassContext) -> Result<PassResult, PassError> {
-        let mut resolved = 0usize;
         let ambiguities = ast.annotations.detected_ambiguities.clone();
+        info!("Pass [ambiguity] — entering, ambiguities={}", ambiguities.len());
+        let mut resolved = 0usize;
 
         for ambiguity in &ambiguities {
             if ambiguity.confidence > 0.8 {
@@ -32,6 +34,7 @@ impl OptimizationPass for AmbiguityResolutionPass {
             }
         }
 
+        info!("Pass [ambiguity] — exit, resolved={}, remaining={}", resolved, ambiguities.len() - resolved);
         Ok(PassResult {
             pass_name: self.name().to_string(),
             tokens_saved: 0,

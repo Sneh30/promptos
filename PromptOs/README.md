@@ -1,9 +1,5 @@
 # PromptOS — The Prompt Compiler
 
-<p align="center">
-  <img src="screenshots/hero.png" alt="PromptOS" width="400">
-</p>
-
 PromptOS is a macOS desktop application that treats human-written prompts as source code, compiles them through a rigorous multi-pass optimization pipeline, and produces model-specific, quality-assured, cost-optimized prompts for frontier LLMs.
 
 ## Architecture
@@ -42,11 +38,11 @@ PromptOS is a macOS desktop application that treats human-written prompts as sou
 ## Screenshots
 
 <p align="center">
-  <img src="screenshots/main-ui.png" alt="Main Application UI" width="400">
-  <img src="screenshots/compiler-output.png" alt="Compiler Output" width="400">
+  <img src="../screenshots/main-ui.png" alt="Main Application UI" width="400">
+  <img src="../screenshots/compiler-output.png" alt="Compiler Output" width="400">
 </p>
 <p align="center">
-  <img src="screenshots/settings.png" alt="Settings & Configuration" width="400">
+  <img src="../screenshots/settings.png" alt="Settings & Configuration" width="400">
 </p>
 
 ## Quick Start
@@ -97,7 +93,6 @@ promptos/
 ├── swift/Sources/PromptOSApp/ # SwiftUI application
 ├── scripts/                  # Build, sign, notarize scripts
 ├── plugins/                  # Example WASM plugins
-├── screenshots/              # Application screenshots
 └── Makefile                  # Build targets (build, test, package, dist)
 ```
 

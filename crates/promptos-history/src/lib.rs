@@ -1,3 +1,4 @@
+use log::{info, warn, debug};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -83,6 +84,7 @@ impl HistoryManager {
 
     pub fn save(&self, entry: HistoryEntry) -> Result<(), String> {
         let path = format!("{}/entries/{}.msgpack", self.config.storage_dir, entry.id);
+        info!("History save — id={}, prompt_len={}, target_model={}", entry.id, entry.user_prompt.len(), entry.target_model);
         let data = rmp_serde::to_vec(&entry).map_err(|e| format!("Serialization error: {}", e))?;
 
         let data = if self.config.compress {
@@ -112,8 +114,10 @@ impl HistoryManager {
     pub fn get(&self, id: &Uuid) -> Result<Option<HistoryEntry>, String> {
         let path = format!("{}/entries/{}.msgpack", self.config.storage_dir, id);
         if !Path::new(&path).exists() {
+            debug!("History get — not found: {}", id);
             return Ok(None);
         }
+        debug!("History get — found: {}", id);
 
         let data = std::fs::read(&path).map_err(|e| format!("Read error: {}", e))?;
         let data = if self.config.compress {
@@ -144,6 +148,7 @@ impl HistoryManager {
     }
 
     pub fn delete(&self, id: &Uuid) -> Result<(), String> {
+        info!("History delete — id={}", id);
         let path = format!("{}/entries/{}.msgpack", self.config.storage_dir, id);
         std::fs::remove_file(&path).ok();
 
@@ -170,6 +175,7 @@ impl HistoryManager {
     }
 
     pub fn search(&self, query: &str) -> Result<Vec<HistoryEntry>, String> {
+        info!("History search — query={}", query);
         let query_lower = query.to_lowercase();
         let entries = self.list(self.config.max_entries, 0)?;
         Ok(entries

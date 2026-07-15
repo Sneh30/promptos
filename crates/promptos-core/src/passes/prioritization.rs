@@ -1,5 +1,6 @@
 use super::*;
 use async_trait::async_trait;
+use log::info;
 
 pub struct PrioritizationOrderingPass;
 
@@ -18,6 +19,7 @@ impl OptimizationPass for PrioritizationOrderingPass {
     }
 
     async fn run(&self, ast: &mut PromptRoot, _ctx: &PassContext) -> Result<PassResult, PassError> {
+        info!("Pass [prioritization] — entering, children={}", ast.children.len());
         let priority = |node: &PromptNode| -> u8 {
             match node {
                 PromptNode::Constraint(c) => match c.severity {
@@ -48,6 +50,7 @@ impl OptimizationPass for PrioritizationOrderingPass {
         ast.children.sort_by_key(|a| priority(a));
         let _original_order: Vec<u8> = ast.children.iter().map(|c| priority(c)).collect();
 
+        info!("Pass [prioritization] — exit, reordering complete");
         Ok(PassResult {
             pass_name: self.name().to_string(),
             tokens_saved: 0,

@@ -5,6 +5,7 @@ use crate::parser;
 use crate::pass_manager::PassManager;
 use crate::semantic::{PassContext, RuleBasedAnalyzer, SemanticAnalyzer, ModelProfileData};
 use crate::verification;
+use log::{info, debug};
 
 pub struct Compiler {
     target_model: String,
@@ -16,6 +17,7 @@ pub struct Compiler {
 
 impl Compiler {
     pub fn new(target_model: &str, mode: CompilationMode, config: UserConfig) -> Self {
+        info!("Compiler created — target_model={}, mode={:?}", target_model, mode);
         let generator = codegen::create_generator(target_model);
         let mut pass_manager = PassManager::new(mode, target_model.to_string(), config.clone());
         pass_manager.register_defaults();
@@ -31,8 +33,10 @@ impl Compiler {
 
     pub async fn compile(&mut self, input: &str, profile: Option<&ModelProfileData>) -> Result<CompilationResult, String> {
         let start = std::time::Instant::now();
+        info!("Compilation start — input_len={}, target_model={}, mode={:?}", input.len(), self.target_model, self.mode);
 
         let mut root = parser::parse(input)?;
+        debug!("Parse complete — {} AST nodes", root.children.len());
         let original = root.clone();
 
         let analyzer = RuleBasedAnalyzer;
@@ -47,6 +51,9 @@ impl Compiler {
                 DiagnosticSeverity::Info => diagnostics.info(&diag.diagnostic_code, &diag.message, diag.span, diag.recommendation.as_deref()),
             }
         }
+        info!("Analysis — {} diagnostics, {} errors, {} warnings", annotations.diagnostics.len(),
+            annotations.diagnostics.iter().filter(|d| matches!(d.severity, DiagnosticSeverity::Error)).count(),
+            annotations.diagnostics.iter().filter(|d| matches!(d.severity, DiagnosticSeverity::Warning)).count());
 
         let ctx = PassContext {
             model_profile: profile.cloned(),
@@ -56,15 +63,16 @@ impl Compiler {
         };
 
         let pass_results = self.pass_manager.run_all(&mut root, &ctx).await;
-
-        let compiled = self.generator.generate(&root, profile);
+        debug!("Passes complete — {} applied, {} total", pass_results.iter().filter(|r| r.applied).count(), pass_results.len());
 
         let context_limit = profile.map_or(128000, |p| p.context_limit_input);
         let verify_results = verification::verify_all(&root, &original, context_limit, &self.target_model);
 
+        let compiled = self.generator.generate(&root, profile);
         let token_count_original = annotations.token_count_original;
         let token_count_compiled = compiled.text.split_whitespace().count();
         let compilation_time_ms = start.elapsed().as_millis() as u64;
+        info!("Codegen — output_len={}, tokens_original={}, tokens_compiled={}, time_ms={}", compiled.text.len(), token_count_original, token_count_compiled, compilation_time_ms);
 
         let tokens_saved = token_count_original as isize - token_count_compiled as isize;
         let cost_saved = tokens_saved as f64 * profile.map_or(0.0, |p| p.pricing_input_per_mtok) / 1_000_000.0;
