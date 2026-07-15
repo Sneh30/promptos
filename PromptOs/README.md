@@ -49,7 +49,7 @@ PromptOS is a macOS desktop application that treats human-written prompts as sou
 
 ### Download
 
-Download `PromptOSApp-1.0.0.zip`, unzip, and run the `.app` — no setup required.
+[Download PromptOS v1.0.0](https://github.com/Sneh30/promptos/releases/tag/v1.0.0) — unzip and run the `.app`, no setup required.
 
 ### Build from Source
 
