@@ -29,3 +29,5 @@ Gemini_Generated_Image_*.png
 
 # Dependencies (not workspace root)
 # Cargo.lock should be committed for workspace
+PromptOSzip.zip
+Screenshot*.png
